@@ -1,0 +1,59 @@
+#
+# #开发环境（测试环境配置）
+#
+spring:
+  application:
+    name: "internship_cloud"
+    servlet:
+      application-display-name: internship_cloud
+    mvc:
+      static-path-pattern: /static/**
+  datasource:
+    #测试环境云数据库
+    url: jdbc:mysql://101.35.116.79/internship_cloud?useUnicode=true&serverTimezone=Asia/Shanghai&characterEncoding=utf-8&useSSL=false&allowMultiQueries=true&rewriteBatchedStatements=true
+    username: ENC(MmOLAngs4GkWuqpcgn7iZWifPY9nDW/H)
+    password: ENC(J2tEnGmgiziNSxlhDUgmHi6KRpKSHej3aoIDVaLXMj4=)
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    hikari:
+      max-lifetime: 30000
+      minimum-idle: 3
+      maximum-pool-size: 10
+      connection-test-query: SELECT 1
+#     Redis配置信息
+#  redis:
+#    database: 0
+#    host: r-bp192efcfb5f4604pd.redis.rds.aliyuncs.com
+#    port: 6379
+#    jedis:
+#      pool:
+#        max-idle: 10     # 连接池中的最小空闲连接
+#        min-idle: 2      # 连接池中的最大空闲连接
+#        max-active: 1000 # 连接池最大连接数（使用负值表示没有限制）
+#        max-wait: -1     # 连接池最大阻塞等待时间（使用负值表示没有限制）
+#    timeout: 5000       # 连接超时时间
+#    password: Tssqwerdf123456
+#  jackson:
+#    time-zone: GMT+8
+#    date-format: yyyy-MM-dd HH:mm:ss
+  servlet:
+    multipart:
+      max-file-size: 500MB #文件大小限制
+      max-request-size: 500MB #接口大小限制
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-not-delete-value: 0
+      logic-delete-value: 1
+    sql-parser-cache: true
+  mapper-locations: com/above/mapper/*.xml
+jasypt:
+  encryptor:
+    password: saltanbo
+# swagger的doc.html网站是否显示接口文档
+swagger:
+  enable: true
+
+

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.above.dao.DepartmentTeacherRelationMapper">
+
+    <select id="getLeaderList" resultType="com.above.dto.LeaderList">
+        SELECT
+        t.id AS id,
+        t.teacher_name AS teacherName,
+        t.gender AS gender,
+        t.work_number AS workNumber
+        FROM
+        department_teacher_relation AS dtr
+        LEFT JOIN teacher_info AS t ON dtr.teacher_id = t.id
+        <where>
+        dtr.deleted=0
+            <if test="id != null">
+                AND dtr.department_id = #{id}
+            </if>
+            <if test="relationType!=null">
+                AND dtr.relation_type =#{relationType}
+            </if>
+        </where>
+    </select>
+    <select id="getTeacherRelationDepartment" resultType="com.above.po.DepartmentInfo">
+        SELECT
+            d.id,
+            d.department_name,
+            d.school_id,
+            d.school_name
+        FROM
+            department_teacher_relation AS dtr
+                LEFT JOIN department_info as d on dtr.department_id = d.id
+        WHERE
+            dtr.deleted = 0
+            and dtr.teacher_id = #{teacherId}
+    </select>
+
+</mapper>

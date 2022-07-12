@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.above.dao.UserMapper">
+    <sql id="MyBaseSql">
+        u.id,u.user_type,u.user_name,u.password,u.user_avatar,telephone,email,wechat,account_number,gender,birth,sign,address_code,address
+    </sql>
+    <select id="getUserInfoByPhoneOrUserAccount" resultType="com.above.dto.UserDto">
+        SELECT
+        <include refid="MyBaseSql"/>
+        FROM `user` u
+        LEFT JOIN user_account ua ON ua.user_id = u.id
+        <where>
+            <if test="phoneOrAccount != null">
+                AND u.status = 0
+                AND u.deleted = 0
+                AND ua.account_number = #{phoneOrAccount}
+            </if>
+            <if test="phoneOrAccount != null">
+                OR ua.telephone = #{phoneOrAccount}
+                AND u.status = 0
+                AND u.deleted = 0
+            </if>
+        </where>
+    </select>
+    <select id="getRegisterUser" resultType="java.lang.Integer">
+        SELECT
+            COUNT(1)
+        FROM
+            `user`
+        WHERE
+             create_datetime BETWEEN #{start,jdbcType=TIMESTAMP} And #{end,jdbcType=TIMESTAMP}
+
+    </select>
+    <select id="getAll" resultType="com.above.dto.UserDto">
+        SELECT
+        <include refid="MyBaseSql"/>
+        FROM `user` u
+        LEFT JOIN user_account ua ON ua.user_id = u.id
+        where
+        u.id > 1
+    </select>
+    <select id="getUserDtoById" resultType="com.above.dto.UserDto">
+        SELECT
+        <include refid="MyBaseSql"/>
+        FROM `user` u
+        LEFT JOIN user_account ua ON ua.user_id = u.id
+        <where>
+            u.id = #{id}
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,10 @@
+server:
+  port: 8084
+  servlet:
+#    测试接口前缀
+    context-path: /internship
+spring:
+  profiles:
+    #    dev 测试化境
+    #    prod 生产环境
+    active: dev

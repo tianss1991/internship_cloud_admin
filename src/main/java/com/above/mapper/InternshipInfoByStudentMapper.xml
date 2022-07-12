@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.above.dao.InternshipInfoByStudentMapper">
+    <select id="internshipInfoCheckList" resultType="com.above.dto.InternshipCheckDto">
+    SELECT
+    	iibsl.id as id,
+	    s.student_name as studentName,
+	    iibsl.`status` as status,
+	    ipi.plan_title as planTitle,
+		<if test="internshipType == 1">
+			iibs.company_name as companyName,
+			iibs.job_department as jobDepartment,
+			iibs.job_name as jobName,
+		</if>
+		<if test="internshipType == 3">
+			iibs.company_name as companyName,
+			iibs.job_category as jobCategory,
+			iibs.job_name as jobName,
+		</if>
+	    iibs.create_time as createTime,
+	    iibsl.create_time as checkTime,
+	    iibsl.fail_reason as failReason
+    FROM
+	    internship_info_by_student_log iibsl
+	LEFT JOIN internship_info_by_student iibs ON iibsl.relation_internship_info_by_student_id = iibs.id and iibs.deleted=0
+	LEFT JOIN internship_plan_info ipi ON iibs.relation_plan_id = ipi.id and ipi.deleted=0
+	LEFT JOIN student_info s on s.id=iibs.relation_student_id and s.deleted=0
+	LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
+	LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+		<where>
+			iibsl.deleted=0
+			<if test="planId != null">
+				AND iibs.relation_plan_id = #{planId}
+			</if>
+
+			<if test="internshipType != null">
+				AND iibs.internship_type = #{internshipType}
+				<if test="internshipType == 1">
+					<if test="checkStatus != null">
+						AND iibsl.check_status = #{checkStatus}
+					</if>
+				</if>
+			</if>
+			<if test="key !=null">
+				AND s.name like  CONCAT('%',#{key},'%')
+			</if>
+			<if test="isCheck != null">
+				<if test="isCheck == 1">
+					AND iibs.status in (2,3)
+					<if test="internshipStatus != null">
+						<if test="internshipStatus == 0">
+							AND iibsl.status = 2
+						</if>
+						<if test="internshipStatus == 1">
+							AND iibsl.status = 3
+						</if>
+					</if>
+				</if>
+			</if>
+			<if test="planId != null">
+				and ipi.id = #{planId}
+			</if>
+			<if test="teacherId != null">
+				and t.id = #{teacherId}
+			</if>
+		</where>
+		order by iibsl.create_time desc
+		limit #{start},#{size}
+    </select>
+	<select id="countInternShipInfoChecked" resultType="java.lang.Integer">
+		SELECT
+		count(*)
+		FROM
+		internship_info_by_student_log iibsl
+		LEFT JOIN internship_info_by_student iibs ON iibsl.relation_internship_info_by_student_id = iibs.id and iibs.deleted=0
+		LEFT JOIN internship_plan_info ipi ON iibs.relation_plan_id = ipi.id and ipi.deleted=0
+		LEFT JOIN student_info s on s.id=iibs.relation_student_id and s.deleted=0
+		LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
+		LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+		<where>
+			iibsl.deleted=0
+			<if test="planId != null">
+				AND iibs.relation_plan_id = #{planId}
+			</if>
+
+			<if test="internshipType != null">
+				AND iibs.internship_type = #{internshipType}
+				<if test="internshipType == 1">
+					<if test="checkStatus != null">
+						AND iibsl.check_status = #{checkStatus}
+					</if>
+				</if>
+			</if>
+			<if test="key !=null">
+				AND s.name like  CONCAT('%',#{key},'%')
+			</if>
+			<if test="isCheck != null">
+				<if test="isCheck == 1">
+					AND iibs.status in (2,3)
+					<if test="internshipStatus != null">
+						<if test="internshipStatus == 0">
+							AND iibsl.status = 2
+						</if>
+						<if test="internshipStatus == 1">
+							AND iibsl.status = 3
+						</if>
+					</if>
+				</if>
+			</if>
+			<if test="planId != null">
+				and ipi.id = #{planId}
+			</if>
+			<if test="teacherId != null">
+				and t.id = #{teacherId}
+			</if>
+		</where>
+	</select>
+	<select id="countInternShipInfoUnCheck" resultType="java.lang.Integer">
+		SELECT
+		count(*)
+		FROM
+		internship_info_by_student iibs
+		LEFT JOIN internship_plan_info ipi ON iibs.relation_plan_id = ipi.id
+		AND ipi.deleted = 0
+		LEFT JOIN student_info s on s.user_id = iibs.create_by and s.deleted = 0
+		LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
+		LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+		<where>
+			iibs.deleted =0
+			<if test="planId != null">
+				AND iibs.relation_plan_id = #{planId}
+			</if>
+
+			<if test="internshipType != null">
+				AND iibs.internship_type = #{internshipType}
+				<if test="internshipType == 1">
+					<if test="checkStatus != null">
+						AND iibs.check_status = #{checkStatus}
+					</if>
+				</if>
+			</if>
+			<if test="key !=null">
+				AND s.name like  CONCAT('%',#{key},'%')
+			</if>
+			<if test="isCheck != null">
+				<if test="isCheck == 0">
+					AND iibs.status = 1
+				</if>
+			</if>
+			<if test="planId != null">
+				and ipi.id = #{planId}
+			</if>
+			<if test="teacherId != null">
+				and t.id = #{teacherId}
+			</if>
+		</where>
+	</select>
+	<select id="internshipInfoUnCheckList" resultType="com.above.dto.InternshipCheckDto">
+	SELECT
+		s.student_name as studentName,
+		ipi.plan_title as planTitle,
+		<if test="internshipType == 1">
+			iibs.company_name as companyName,
+			iibs.job_name as jobName,
+			iibs.job_department as jobDepartment,
+		</if>
+		<if test="internshipType == 2">
+			iibs.reason as reason,
+		</if>
+		<if test="internshipType == 3">
+			iibs.job_name as jobName,
+			iibs.job_category as jobCategory,
+		</if>
+		iibs.create_time as  createTime,
+		iibs.`status` as status
+		FROM
+		internship_info_by_student iibs
+		LEFT JOIN internship_plan_info ipi ON iibs.relation_plan_id = ipi.id
+		AND ipi.deleted = 0
+		LEFT JOIN student_info s on s.user_id = iibs.create_by and s.deleted = 0
+		LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
+		LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+		<where>
+			iibs.deleted =0
+			<if test="planId != null">
+				AND iibs.relation_plan_id = #{planId}
+			</if>
+			<if test="internshipType != null">
+				AND iibs.internship_type = #{internshipType}
+				<if test="internshipType == 1">
+					<if test="checkStatus != null">
+						AND iibs.check_status = #{checkStatus}
+					</if>
+				</if>
+			</if>
+			<if test="key !=null">
+				AND s.name like  CONCAT('%',#{key},'%')
+			</if>
+			<if test="isCheck != null">
+				<if test="isCheck == 0">
+					AND iibs.status = 1
+				</if>
+			</if>
+			<if test="planId != null">
+				and ipi.id = #{planId}
+			</if>
+			<if test="teacherId != null">
+				and t.id = #{teacherId}
+			</if>
+		</where>
+	</select>
+</mapper>

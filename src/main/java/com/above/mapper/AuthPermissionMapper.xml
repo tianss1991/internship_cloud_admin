@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.above.dao.AuthPermissionMapper">
+
+    <select id="getPermission" resultType="com.above.dto.AuthRolePermissionDto">
+        SELECT ap.permission_name permissionName,arp.role_id roleId,arp.permission_id permissionId FROM
+        auth_role_permission arp
+        LEFT JOIN auth_permission ap ON ap.id = arp.permission_id AND ap.deleted = 0
+        <where>
+            <if test="roleId != null">
+                AND arp.role_id = #{roleId}
+            </if>
+            AND arp.deleted = 0
+        </where>
+    </select>
+</mapper>

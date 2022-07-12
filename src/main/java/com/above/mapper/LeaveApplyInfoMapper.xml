@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.above.dao.LeaveApplyInfoMapper">
+    <select id="leaveApplyCheckList" resultType="com.above.dto.LeaveApplyInfoDto">
+        SELECT
+        lai.id as id,
+        lai.start_time as startTime,
+        lai.end_time as endTime,
+        lai.type as type,
+        lai.reason as reason,
+        lai.`status` as status,
+        lai.create_time as createTime,
+        lai.update_time as updateTime,
+        s.student_name as studentName
+        FROM
+        leave_apply_info lai
+        LEFT JOIN student_info s on s.user_id = lai.create_by
+        and s.deleted = 0
+        LEFT JOIN internship_info_by_student iibs on iibs. relation_student_id = s.id and iibs.deleted = 0
+        LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
+        LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+        <where>
+            <if test=" isCheck != null">
+                <if test="isCheck == 0">
+                    and lai.status = 1
+                </if>
+                <if test="isCheck == 1">
+                    and lai.status in (2,3)
+                </if>
+            </if>
+            <if test="key != null">
+                and s.student_name like concat ('%',#{key},'%')
+            </if>
+            <if test="teacherId != null">
+                and iwt.teacher_id = #{teacherId}
+            </if>
+            <if test="planId != null">
+                and iibs.relation_plan_id = #{planId}
+                and iwt.relation_plan_id = #{planId}
+            </if>
+        </where>
+        order by lai.create_time desc
+        limit #{start},#{size}
+    </select>
+    <select id="countLeaveApplyCheckList" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        leave_apply_info lai
+        LEFT JOIN student_info s on s.user_id = lai.create_by
+        LEFT JOIN internship_info_by_student iibs on iibs. relation_student_id = s.id and iibs.deleted = 0
+        LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
+        LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+        and s.deleted = 0
+        <where>
+            AND lai.deleted = 0
+            <if test=" isCheck != null">
+                <if test="isCheck == 0">
+                    and lai.status = 1
+                </if>
+                <if test="isCheck == 1">
+                    and lai.status in (2,3)
+                </if>
+            </if>
+             <if test="teacherId != null">
+                and iwt.teacher_id = #{teacherId}
+            </if>
+            <if test="planId != null">
+                and iibs.relation_plan_id = #{planId}
+                and iwt.relation_plan_id = #{planId}
+            </if>
+        </where>
+    </select>
+<!--    <select id="leaveApplyListChecked" resultType="com.above.dto.LeaveApplyInfoDto">-->
+<!--    SELECT-->
+<!--        lai.id as id,-->
+<!--        lail.id as leaveApplyLogId,-->
+<!--        lai.start_time as startTime,-->
+<!--        lai.end_time as endTime,-->
+<!--        lai.type as type,-->
+<!--        lai.reason as reason,-->
+<!--        lai.`status` as status,-->
+<!--        lail.`status` as leaveApplyLogStatus,-->
+<!--        lai.create_time as createTime,-->
+<!--        lail.create_time as checkTime,-->
+<!--        s.student_name as studentName-->
+<!--    FROM-->
+<!--        leave_apply_info_log lail-->
+<!--        LEFT JOIN leave_apply_info lai on lail.leave_apply_info_id = lai.id and lai.deleted =0-->
+<!--        LEFT JOIN student_info s on s.user_id = lai.create_by and s.deleted = 0-->
+<!--        LEFT JOIN internship_info_by_student iibs on iibs. relation_student_id = s.id and iibs.deleted = 0-->
+<!--        LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0-->
+<!--        LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0-->
+<!--        <where>-->
+<!--         and lail.deleted = 0-->
+<!--            <if test=" isCheck != null">-->
+<!--                <if test="isCheck == 1">-->
+<!--                   and lai.status in(2,3)-->
+<!--                </if>-->
+<!--                <if test="checkStatus != null">-->
+<!--                    <if test="checkStatus == 0">-->
+<!--                       and lail.status = 2-->
+<!--                    </if>-->
+<!--                    <if test="checkStatus == 1">-->
+<!--                        and lail.status = 3-->
+<!--                    </if>-->
+<!--                </if>-->
+<!--            </if>-->
+<!--            <if test="teacherId != null">-->
+<!--                and iwt.teacher_id = #{teacherId}-->
+<!--            </if>-->
+<!--            <if test="planId != null">-->
+<!--                and iibs.relation_plan_id = #{planId}-->
+<!--                and iwt.relation_plan_id = #{planId}-->
+<!--            </if>-->
+<!--            <if test="key != null">-->
+<!--                and s.student_name like concat ('%',#{key},'%')-->
+<!--            </if>-->
+<!--        </where>-->
+<!--        order by lail.create_time desc-->
+<!--        limit #{start},#{size}-->
+<!--    </select>-->
+<!--    <select id="countLeaveApplyListChecked" resultType="java.lang.Integer">-->
+<!--        SELECT-->
+<!--       count(*)-->
+<!--        FROM-->
+<!--        leave_apply_info_log lail-->
+<!--        LEFT JOIN leave_apply_info lai on lail.leave_apply_info_id = lai.id and lai.deleted = 0-->
+<!--        LEFT JOIN student_info s on s.user_id = lai.create_by and s.deleted = 0-->
+<!--        LEFT JOIN internship_info_by_student iibs on iibs. relation_student_id = s.id and iibs.deleted = 0-->
+<!--        LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0-->
+<!--        LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0-->
+<!--        <where>-->
+<!--            and lail.deleted = 0-->
+<!--            <if test=" isCheck != null">-->
+<!--                <if test="isCheck == 1">-->
+<!--                    and lai.status in(2,3)-->
+<!--                </if>-->
+<!--                <if test="checkStatus != null">-->
+<!--                    <if test="checkStatus == 0">-->
+<!--                        and lail.status = 2-->
+<!--                    </if>-->
+<!--                    <if test="checkStatus == 1">-->
+<!--                        and lail.status = 3-->
+<!--                    </if>-->
+<!--                </if>-->
+<!--            </if>-->
+<!--            <if test="teacherId != null">-->
+<!--                and iwt.teacher_id = #{teacherId}-->
+<!--            </if>-->
+<!--            <if test="planId != null">-->
+<!--                and iibs.relation_plan_id = #{planId}-->
+<!--                and iwt.relation_plan_id = #{planId}-->
+<!--            </if>-->
+<!--        </where>-->
+<!--    </select>-->
+
+<!--    <select id="getLeaveApplyByIdChecked" resultType="com.above.dto.LeaveApplyInfoDto">-->
+<!--SELECT-->
+<!--	lai.id AS id,-->
+<!--	lai.start_time AS startTime,-->
+<!--	lai.end_time AS endTime,-->
+<!--	lai.type AS type,-->
+<!--	lai.duration AS duration,-->
+<!--	lai.reason AS reason,-->
+<!--	<if test="studentId != null">-->
+<!--        tu.user_avatar AS avatar,-->
+<!--        t.teacher_name AS name,-->
+<!--        lai.create_time as time,-->
+<!--    </if>-->
+<!--    <if test="teacherId != null">-->
+<!--        s.student_name AS name,-->
+<!--        lail.create_time as time,-->
+<!--        su.user_avatar AS avatar,-->
+<!--    </if>-->
+<!--        lai.`status` AS STATUS-->
+<!--    FROM-->
+<!--	leave_apply_info_log lail-->
+<!--	LEFT JOIN leave_apply_info lai ON lail.leave_apply_info_id = lai.id-->
+<!--	AND lai.deleted = 0-->
+<!--	LEFT JOIN student_info s ON s.user_id = lai.create_by-->
+<!--	AND s.deleted = 0-->
+<!--	LEFT JOIN internship_info_by_student iibs ON iibs.relation_student_id = s.id-->
+<!--	AND iibs.deleted = 0-->
+<!--	LEFT JOIN internship_with_teacher iwt ON iwt.relation_plan_id = iibs.relation_plan_id-->
+<!--	AND iwt.deleted = 0-->
+<!--	LEFT JOIN teacher_info t ON t.id = iwt.teacher_id-->
+<!--	AND t.deleted = 0-->
+<!--	LEFT JOIN `user` su ON s.user_id = su.id-->
+<!--	LEFT JOIN `user` tu ON t.user_id = tu.id-->
+<!--WHERE-->
+<!--    lail.deleted = 0-->
+<!--	and lai.STATUS IN ( 2, 3 )-->
+<!--        <if test="teacherId != null">-->
+<!--            and iwt.teacher_id = #{teacherId}-->
+<!--        </if>-->
+<!--        <if test="studentId != null">-->
+<!--            and iibs.relation_student_id = #{studentId}-->
+<!--        </if>-->
+<!--        <if test="planId != null">-->
+<!--            and iibs.relation_plan_id = #{planId}-->
+<!--            and iwt.relation_plan_id = #{planId}-->
+<!--        </if>-->
+<!--        <if test="leaveApplyLogId != null">-->
+<!--            and lail.id = #{leaveApplyLogId}-->
+<!--        </if>-->
+<!--    </select>-->
+
+    <select id="getLeaveApplyByIdUnCheck" resultType="com.above.dto.LeaveApplyInfoDto">
+SELECT
+	lai.id AS id,
+	lai.start_time AS startTime,
+	lai.end_time AS endTime,
+	lai.type AS type,
+	lai.duration AS duration,
+	lai.reason AS reason,
+	lai.fail_reason AS failReason,
+    lai.create_time AS createTime,
+    lai.update_time AS updateTime,
+    <if test="teacherId != null">
+        su.user_avatar AS avatar,
+        s.student_name AS name,
+        lai.create_time AS time,
+    </if>
+    lai.`status` AS STATUS
+FROM
+  leave_apply_info lai
+	LEFT JOIN student_info s ON s.user_id = lai.create_by
+	AND s.deleted = 0
+	LEFT JOIN internship_info_by_student iibs ON iibs.relation_student_id = s.id
+	AND iibs.deleted = 0
+	LEFT JOIN internship_with_teacher iwt ON iwt.relation_plan_id = iibs.relation_plan_id
+	AND iwt.deleted = 0
+	LEFT JOIN teacher_info t ON t.id = iwt.teacher_id
+	AND t.deleted = 0
+	LEFT JOIN `user` su ON s.user_id = su.id
+	LEFT JOIN `user` tu ON t.user_id = tu.id
+WHERE
+        lai.deleted = 0
+        <if test="teacherId != null">
+            and iwt.teacher_id = #{teacherId}
+        </if>
+        <if test="studentId != null">
+            and iibs.relation_student_id = #{studentId}
+        </if>
+        <if test="studentId != null">
+            and iibs.relation_student_id = #{studentId}
+        </if>
+        <if test="planId != null">
+            and iibs.relation_plan_id = #{planId}
+            and iwt.relation_plan_id = #{planId}
+        </if>
+        <if test="leaveApplyId != null">
+            and lai.id = #{leaveApplyId}
+        </if>
+
+    </select>
+    <select id="getLeaveApplyListByUserId" resultType="com.above.dto.LeaveApplyInfoDto">
+    SELECT
+        lai.id as id,
+        lai.start_time AS startTime,
+        lai.end_time AS endTime,
+        lai.type AS type,
+        lai.reason AS reason,
+        lai.`status` as status,
+        lai.create_time AS createTime,
+        lai.update_time as updateTime
+    FROM
+        leave_apply_info lai
+        where lai.deleted=0
+        <if test="createBy != null">
+            and lai.create_by = #{createBy}
+        </if>
+        order by lai.create_time desc,lai.update_time desc
+        limit #{start},#{size}
+    </select>
+    <select id="getLeaveApplyListByUserIdCount" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        leave_apply_info lai
+        where lai.deleted=0
+        <if test="createBy != null">
+            and lai.create_by = #{createBy}
+        </if>
+    </select>
+</mapper>

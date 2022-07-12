@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.above.dao.UserAccountMapper">
+
+    <select id="getAllTeacherByDepartment" resultType="com.above.dto.UserList">
+        SELECT
+	        u.user_avatar as userAva,
+	        ti.teacher_name as userName,
+	        ti.work_number as number,
+	        ti.gender as gender,
+	        ti.id as id
+        FROM
+	        teacher_info ti
+	    LEFT JOIN `user` u ON ti.user_id = u.id
+	    <where>
+	        u.deleted=0
+	        AND ti.deleted=0
+	        AND u.user_type=2
+            <if test="schoolId != null and schoolId>0">
+                AND school_id=#{schoolId}
+            </if>
+            <if test="departmentId != null and departmentId>0">
+                AND department_id=#{departmentId}
+            </if>
+            <if test="key != null and key != '' ">
+                AND ti.teacher_name like  CONCAT('%',#{key},'%') or ti.work_number like  CONCAT('%',#{key},'%')
+                AND u.deleted=0
+                AND ti.deleted=0
+                AND u.user_type=2
+            </if>
+        </where>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getTotalTeacherByDepartment" resultType="Integer">
+        SELECT count(*) FROM teacher_info ti LEFT JOIN `user` u ON ti.user_id = u.id
+        <where>
+            u.deleted=0
+            AND ti.deleted=0
+            AND u.user_type=2
+            <if test="schoolId != null and schoolId>0">
+                AND school_id=#{schoolId}
+            </if>
+            <if test="departmentId != null and departmentId>0">
+                AND department_id=#{departmentId}
+            </if>
+            <if test="key != null and key != '' ">
+                AND ti.teacher_name like  CONCAT('%',#{key},'%') or ti.work_number like  CONCAT('%',#{key},'%')
+                AND u.deleted=0
+                AND ti.deleted=0
+                AND u.user_type=2
+            </if>
+        </where>
+    </select>
+    <select id="getAllVisitor" resultType="com.above.dto.UserList">
+        SELECT
+        u.user_avatar as userAva,
+        u.user_name as userName,
+        ua.account_number as number,
+        u.id as id
+        FROM
+        `user` u
+        LEFT JOIN user_account ua ON ua.user_id = u.id
+        LEFT JOIN teacher_info ti ON ti.user_id = u.create_by
+        <where>
+            u.deleted=0
+            AND ua.deleted=0
+            AND u.user_type=1
+            <if test="schoolId != null and schoolId>0">
+                AND ti.school_id=#{schoolId}
+            </if>
+            <if test="departmentId != null and departmentId>0">
+                AND ti.department_id=#{departmentId}
+            </if>
+            <if test="key != null and key != '' ">
+                AND u.user_name like  CONCAT('%',#{key},'%') or ua.account_number like  CONCAT('%',#{key},'%')
+                AND u.deleted=0
+                AND ua.deleted=0
+                AND u.user_type=1
+            </if>
+        </where>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getTotalVisitor" resultType="Integer">
+        SELECT count(*) FROM `user` u LEFT JOIN user_account ua ON ua.user_id = u.id
+        LEFT JOIN teacher_info ti ON ti.user_id = u.create_by
+        <where>
+            u.deleted=0
+            AND ua.deleted=0
+            AND u.user_type=1
+            <if test="schoolId != null and schoolId>0">
+                AND ti.school_id=#{schoolId}
+            </if>
+            <if test="departmentId != null and departmentId>0">
+                AND ti.department_id=#{departmentId}
+            </if>
+            <if test="key != null and key != '' ">
+                AND u.user_name like  CONCAT('%',#{key},'%') or ua.account_number like  CONCAT('%',#{key},'%')
+                AND u.deleted=0
+                AND ua.deleted=0
+                AND u.user_type=1
+            </if>
+        </where>
+    </select>
+    <select id="getSingleVisitor" resultType="com.above.dto.ClassReviewDto">
+        SELECT
+        a.id as publicClassId,
+        a.public_title ,
+        a.create_datetime as classCreateDatetime,
+        a.user_name as userName,
+        a.user_avatar as userAvatar,
+        a.class_type,
+        a.task_status,
+        twce.id as taskWithClassEvaluateId,
+        uu.user_name as evaluateUserName,
+        uu.user_avatar as evaluateUserAvatar,
+        uu.user_type as userType,
+        twce.create_datetime as evaluateCreateDatetime,
+        twce.verify_status as verifyStatus,
+        twce.evaluate_status as evaluateStatus,
+        twce.score
+        FROM
+        task_with_class_evaluate twce
+        LEFT JOIN (
+        SELECT
+        twpc.id,
+        twpc.public_title,
+        twpc.create_datetime,
+        twpc.class_type,
+        twpc.task_status,
+        u.user_name,
+        u.user_avatar
+        FROM
+        task_with_public_class twpc
+        LEFT JOIN `user` u ON twpc.create_by = u.id
+        where twpc.deleted=0
+        ) a ON a.id = twce.relation_public_class_id
+        LEFT JOIN `user` uu ON twce.create_by = uu.id
+        <where>
+            twce.deleted = 0
+            AND uu.user_type=1
+            <if test="visitorId != null and visitorId > 0">
+                AND uu.id=#{visitorId}
+            </if>
+        </where>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getTotalVisitorEvaluate" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        task_with_class_evaluate twce
+        LEFT JOIN (
+        SELECT
+        twpc.id,
+        twpc.public_title,
+        twpc.create_datetime,
+        twpc.class_type,
+        twpc.task_status,
+        u.user_name,
+        u.user_avatar
+        FROM
+        task_with_public_class twpc
+        LEFT JOIN `user` u ON twpc.create_by = u.id
+        where twpc.deleted=0
+        ) a ON a.id = twce.relation_public_class_id
+        LEFT JOIN `user` uu ON twce.create_by = uu.id
+        <where>
+            twce.deleted = 0
+            AND uu.user_type=1
+            <if test="visitorId != null and visitorId > 0">
+                AND uu.id=#{visitorId}
+            </if>
+        </where>
+    </select>
+    <select id="getAllVisitorByManagerPage" resultType="com.above.dto.UserList">
+        SELECT
+        u.user_avatar as userAva,
+        u.user_name as userName,
+        ua.account_number as number,
+        u.id as id
+        FROM
+        `user` u
+        LEFT JOIN user_account ua ON ua.user_id = u.id
+        <where>
+            u.deleted=0
+            AND ua.deleted=0
+            AND u.user_type=1
+            <if test="userId != null">
+                AND u.create_by=#{userId}
+                AND ua.create_by=#{userId}
+            </if>
+        </where>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getAllVisitorByManagerNoPage" resultType="com.above.dto.UserList">
+        SELECT
+        u.user_avatar as userAva,
+        u.user_name as userName,
+        ua.account_number as number,
+        u.id as id
+        FROM
+        `user` u
+        LEFT JOIN user_account ua ON ua.user_id = u.id
+        <where>
+            u.deleted=0
+            AND ua.deleted=0
+            AND u.user_type=1
+            <if test="userId != null">
+                AND u.create_by=#{userId}
+                AND ua.create_by=#{userId}
+            </if>
+        </where>
+    </select>
+    <select id="getTotalVisitorByManager" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        `user` u
+        LEFT JOIN user_account ua ON ua.user_id = u.id
+        <where>
+            u.deleted=0
+            AND ua.deleted=0
+            AND u.user_type=1
+            <if test="userId != null">
+                AND u.create_by=#{userId}
+                AND ua.create_by=#{userId}
+            </if>
+        </where>
+    </select>
+</mapper>
