@@ -25,7 +25,7 @@ public class UserVo extends BaseVo {
      */
     public static final Integer STUDENT = 1;
     /**
-     *  教职工
+     *  教师
      */
     public static final Integer TEACHER = 2;
 

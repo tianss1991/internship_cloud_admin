@@ -15,6 +15,9 @@ public class InternshipApplicationVo{
     @ApiModelProperty(value = "实习id")
     private Integer internshipId;
 
+    @ApiModelProperty(value = "实习日志表id")
+    private Integer internshipLogId;
+
     /**0-失败 1-成功*/
     @ApiModelProperty(value = "审核状态")
     private Integer internshipStatus;
@@ -160,6 +163,9 @@ public class InternshipApplicationVo{
     @TableField("salary")
     private String salary;
 
+    @ApiModelProperty(value = "状态")
+    private Integer status;
+
     @ApiModelProperty(value = "是否有特殊专业情况 0-否 1-是")
     @TableField("is_special")
     private Integer isSpecial;
@@ -183,6 +189,17 @@ public class InternshipApplicationVo{
     @ApiModelProperty(value = "实习计划id")
     private Integer planId;
 
+    @ApiModelProperty(value = "专业Id")
+    private Integer majorId;
+
+    @ApiModelProperty(value = "经度")
+    private String longitude;
+
+    @ApiModelProperty(value = "纬度")
+    private String latitude;
+
+    @ApiModelProperty(value = "打卡次数")
+    private Integer signTimes;
 
     @ApiModelProperty(value = "通用筛选开始时间")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")

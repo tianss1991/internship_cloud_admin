@@ -6,51 +6,87 @@
         di.department_name departmentName, si.school_name schoolName
     </sql>
 
-    <select id="getClassListWithOther" resultType="com.above.dto.ClassListWithOther">
+<!--  获取班级列表映射辅导员列表和班主任列表-->
+    <resultMap id="ClassMap" type="com.above.dto.ClassInfoDto" >
+        <collection property="classLeader" column="{classId=cla.id}" javaType="ArrayList"
+                    ofType="com.above.po.ClassTeacherRelation" select="getClassLeaderList"/>
+        <collection property="classTeacher" column="{classId=cla.id}" javaType="ArrayList"
+                    ofType="com.above.po.ClassTeacherRelation" select="getClassTeacherList"/>
+    </resultMap>
+
+    <sql id="ClassInfo">
+        cla.id,
+        cla.school_id,
+        cla.department_id,
+        cla.major_id,
+        cla.grade_id,
+        cla.class_name,
+        cla.create_by,
+        cla.create_datetime,
+        cla.update_by,
+        cla.update_datetime
+    </sql>
+
+    <sql id="baseLeftJoinField">
+        sc.school_name as schoolName,
+        de.department_name as departmentName,
+        ma.major_name as majorName,
+        gr.grade_year as gradeYear
+    </sql>
+    <sql id="baseLeftJoin">
+        LEFT JOIN school_info AS sc ON cla.school_id = sc.id
+        LEFT JOIN department_info de ON cla.department_id = de.id
+        LEFT JOIN major_info AS ma ON cla.major_id = ma.id
+        LEFT JOIN grade_info AS gr ON cla.grade_id = gr.id
+    </sql>
+
+    <select id="getClassListWithOther" resultMap="ClassMap" resultType="com.above.dto.ClassInfoDto">
         SELECT
-        sc.id AS schoolId,
-        sc.school_name AS schoolName,
-        d.id AS departmentId,
-        d.department_name AS departmentName,
-        c.id AS classId,
-        c.class_name AS className
+            <include refid="ClassInfo"/>,
+               <include refid="baseLeftJoinField"/>
         FROM
-        class_info AS c
-        LEFT JOIN school_info AS sc ON c.school_id = sc.id
-        LEFT JOIN department_info AS d ON c.department_id = d.id
-        WHERE
-        c.deleted =0
-        <if test="schoolId != null">
-            AND c.school_id= #{schoolId}
-        </if>
-        <if test="departmentId != null">
-            AND c.department_id= #{departmentId}
-        </if>
-        <if test="classId != null">
-            AND c.id= #{classId}
-        </if>
-        <if test="schoolIds != null and schoolIds.size()>0">
-            AND c.school_id IN
-            <foreach collection="schoolIds" index="index" item="id" open="(" separator="," close=")">
-                #{id}
-            </foreach>
-        </if>
-        <if test="departmentIds != null and departmentIds.size()>0">
-            AND c.department_id IN
-            <foreach collection="departmentIds" index="index" item="id" open="(" separator="," close=")">
-                #{id}
-            </foreach>
-        </if>
-        <if test="classIds != null and classIds.size()>0">
-            AND c.id IN
-            <foreach collection="classIds" index="index" item="id" open="(" separator="," close=")">
-                #{id}
-            </foreach>
-        </if>
-        <if test="key != null">
-            AND c.class_name like  CONCAT('%',#{key},'%')
-        </if>
-        ORDER BY c.school_id ASC,c.department_id ASC,c.id ASC
+            class_info AS cla
+            <include refid="baseLeftJoin"/>
+        <where>
+            cla.deleted =0
+            <if test="schoolId != null">
+                AND cla.school_id= #{schoolId}
+            </if>
+            <if test="departmentId != null">
+                AND cla.department_id= #{departmentId}
+            </if>
+            <if test="classId != null">
+                AND cla.id= #{classId}
+            </if>
+            <if test="schoolIdList != null and schoolIdList.size()>0">
+                AND cla.school_id IN
+                <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="departmentIdList != null and departmentIdList.size()>0">
+                AND cla.department_id IN
+                <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="classIdList != null and classIdList.size()>0">
+                AND cla.id IN
+                <foreach collection="classIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="key != null">
+                AND cla.class_name like  CONCAT('%',#{key},'%')
+            </if>
+            <if test="majorId != null and majorId > 0">
+                AND cla.major_id = #{majorId}
+            </if>
+            <if test="gradeId != null and gradeId > 0">
+                AND cla.grade_id = #{gradeId}
+            </if>
+        </where>
+        ORDER BY cla.id ASC
         limit #{start},#{size}
     </select>
     <select id="getClassInfoDtoList" resultType="com.above.bean.theory.ClassInfoDto">
@@ -79,26 +115,114 @@
         <if test="classId != null">
             AND c.id= #{classId}
         </if>
-        <if test="schoolIds != null and schoolIds.size()>0">
+        <if test="schoolIdList != null and schoolIdList.size()>0">
             AND c.school_id IN
-            <foreach collection="schoolIds" index="index" item="id" open="(" separator="," close=")">
+            <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
                 #{id}
             </foreach>
         </if>
-        <if test="departmentIds != null and departmentIds.size()>0">
+        <if test="departmentIdList != null and departmentIdList.size()>0">
             AND c.department_id IN
-            <foreach collection="departmentIds" index="index" item="id" open="(" separator="," close=")">
+            <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
                 #{id}
             </foreach>
         </if>
-        <if test="classIds != null and classIds.size()>0">
+        <if test="classIdList != null and classIdList.size()>0">
             AND c.id IN
-            <foreach collection="classIds" index="index" item="id" open="(" separator="," close=")">
+            <foreach collection="classIdList" index="index" item="id" open="(" separator="," close=")">
                 #{id}
             </foreach>
         </if>
         <if test="key != null">
             AND c.class_name like  CONCAT('%',#{key},'%')
         </if>
+    </select>
+    <select id="getClassListWithOtherCount" resultType="java.lang.Integer">
+        SELECT
+         COUNT(cla.id)
+        FROM
+        class_info AS cla
+        <include refid="baseLeftJoin"/>
+        <where>
+            cla.deleted =0
+            <if test="schoolId != null">
+                AND cla.school_id= #{schoolId}
+            </if>
+            <if test="departmentId != null">
+                AND cla.department_id= #{departmentId}
+            </if>
+            <if test="classId != null">
+                AND cla.id= #{classId}
+            </if>
+            <if test="schoolIdList != null and schoolIdList.size()>0">
+                AND cla.school_id IN
+                <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="departmentIdList != null and departmentIdList.size()>0">
+                AND cla.department_id IN
+                <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="classIdList != null and classIdList.size()>0">
+                AND cla.id IN
+                <foreach collection="classIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="key != null">
+                AND cla.class_name like  CONCAT('%',#{key},'%')
+            </if>
+            <if test="majorId != null and majorId > 0">
+                AND cla.major_id = #{majorId}
+            </if>
+            <if test="gradeId != null and gradeId > 0">
+                AND cla.grade_id = #{gradeId}
+            </if>
+        </where>
+    </select>
+    <select id="getClassTeacherList" resultType="com.above.po.ClassTeacherRelation">
+        select
+            ctr.id,
+            ctr.class_id,
+            ctr.teacher_id,
+            ctr.relation_type,
+            ctr.create_by,
+            ctr.create_by,
+            ctr.teacher_name,
+            ctr.update_by,
+            ctr.update_datetime
+        from class_teacher_relation as ctr
+        <where>
+
+            ctr.relation_type = 2
+
+            <if test="classId != null">
+                AND ctr.class_id = #{classId}
+            </if>
+        </where>
+    </select>
+    <select id="getClassLeaderList" resultType="com.above.po.ClassTeacherRelation">
+        select
+        ctr.id,
+        ctr.class_id,
+        ctr.teacher_id,
+        ctr.relation_type,
+        ctr.create_by,
+        ctr.create_by,
+        ctr.teacher_name,
+        ctr.update_by,
+        ctr.update_datetime
+        from class_teacher_relation as ctr
+        <where>
+
+            ctr.relation_type = 1
+
+            <if test="classId != null">
+                AND ctr.class_id = #{classId}
+            </if>
+        </where>
     </select>
 </mapper>

@@ -26,12 +26,24 @@ public class SignInfoTimeTask {
      *   【测试自动执行 5s 一次】
      *  【cron = "5/10 * * * * ?"】
      */
-    @Scheduled(cron = "0 0 0 * * ?")
+//    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "5/10 * * * * ?")
     private void generateSignLogForStudent(){
         try {
             signInfoByStudentService.generateSignLogForStudent();
         } catch (ParseException e) {
             log.error("时间转换错误");
         }
+    }
+
+    /**
+     * @Description: 自动设置未打卡记录为异常 每天凌晨1点执行
+     * @Author: LZH
+     * @Date: 2022/7/18 10:33
+     */
+//    @Scheduled(cron = "0 0 1 * * ?")
+    @Scheduled(cron = "5/10 * * * * ?")
+    private void automaticPunchChangeToException(){
+        signInfoByStudentService.automaticPunchChangeToException();
     }
 }

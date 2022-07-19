@@ -103,7 +103,7 @@ public class UserDto {
     private SchoolInfo schoolInfo;
 
     @ApiModelProperty(value = "实习计划信息")
-    private InternshipPlanInfo internshipPlanInfo;
+    private SimplePlanInfoDto internshipPlanInfo;
 
     @ApiModelProperty(value = "实习信息")
     private InternshipInfoByStudent internshipInfo;

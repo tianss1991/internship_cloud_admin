@@ -2,4 +2,120 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.above.dao.SignInfoByStudentMapper">
 
+    <sql id="SignDto">
+        sibs.id,
+        sibs.student_id,
+        sibs.internship_plan_id,
+        sibs.internship_id,
+        sibs.sign_time,
+        sibs.sign_date,
+        sibs.sign_type,
+        sibs.is_morning,
+        sibs.sign_status,
+        sibs.is_sign,
+        sibs.sign_address,
+        sibs.sign_img,
+        sibs.remark,
+        sibs.create_by,
+        sibs.create_time,
+        sibs.update_by,
+        sibs.update_time,
+        sibs.deleted,
+        sibs.longitude,
+        sibs.latitude
+    </sql>
+
+    <select id="getSignWithApplyIdListByDate" resultType="com.above.dto.SignAndApplyDto">
+        SELECT
+        <include refid="SignDto"/>,
+            sai.id applyId,
+            sai.`status` applyStatus
+        FROM
+            sign_info_by_student AS sibs
+            LEFT JOIN sign_apply_info AS sai ON sibs.id = sai.sign_id AND sai.deleted = 0
+        <where>
+            <if test=" planId != null and planId > 0">
+                sibs.internship_plan_id = #{planId}
+            </if>
+            AND sibs.deleted = 0
+            AND sibs.student_id = #{studentId}
+            AND sibs.sign_date = #{date}
+        </where>
+        order by sibs.is_morning asc ,sibs.sign_type asc
+    </select>
+    <select id="getSignWithApplyListByStartAndEndTime" resultType="com.above.dto.SignAndApplyDto">
+        SELECT
+        <include refid="SignDto"/>,
+        sai.id applyId,
+        sai.`status` applyStatus
+        FROM
+        sign_info_by_student AS sibs
+        LEFT JOIN sign_apply_info AS sai ON sibs.id = sai.sign_id AND sai.deleted = 0
+        <where>
+            <if test=" planId != null and planId > 0">
+                sibs.internship_plan_id = #{planId}
+            </if>
+            AND sibs.deleted = 0
+            AND sibs.student_id = #{studentId}
+            AND sibs.sign_date BETWEEN #{startTime} AND #{endTime}
+        </where>
+        ORDER BY sibs.sign_date ASC,sibs.is_morning ASC ,sibs.sign_type ASC
+    </select>
+    <select id="getSignListDetail" resultType="com.above.dto.SignAndApplyDto">
+        SELECT
+        <include refid="SignDto"/>,
+        sai.id applyId,
+        sai.`status` applyStatus
+        FROM
+        sign_info_by_student AS sibs
+        LEFT JOIN sign_apply_info AS sai ON sibs.id = sai.sign_id AND sai.deleted = 0
+        LEFT JOIN student_info AS s on sibs.student_id = s.id
+        <where>
+            <if test=" planId != null and planId > 0">
+                sibs.internship_plan_id = #{planId}
+            </if>
+            AND sibs.deleted = 0
+            <if test="studentId != null and studentId >0">
+                AND sibs.student_id = #{studentId}
+            </if>
+            <if test="date != null">
+                AND sibs.sign_date = #{date}
+            </if>
+            <if test="classId != null">
+                AND s.class_id = #{classId}
+            </if>
+            <if test="key != null and key != ''">
+                and s.student_name like concat('%',#{key},'%')
+            </if>
+            AND sibs.sign_status is not null
+        </where>
+        ORDER BY sibs.sign_date Desc,sibs.is_morning Desc ,sibs.sign_type Desc
+        limit #{start},#{size}
+    </select>
+    <select id="getSignListDetailTotalCount" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+        sign_info_by_student AS sibs
+        LEFT JOIN sign_apply_info AS sai ON sibs.id = sai.sign_id AND sai.deleted = 0
+        <where>
+            <if test=" planId != null and planId > 0">
+                sibs.internship_plan_id = #{planId}
+            </if>
+            AND sibs.deleted = 0
+            <if test="studentId != null and studentId >0">
+                AND sibs.student_id = #{studentId}
+            </if>
+            <if test="date != null">
+                AND sibs.sign_date = #{date}
+            </if>
+            <if test="classId != null">
+                AND s.class_id = #{classId}
+            </if>
+            <if test="key != null and key != ''">
+                and s.student_name like concat('%',#{key},'%')
+            </if>
+            AND sibs.sign_status is not null
+        </where>
+    </select>
 </mapper>

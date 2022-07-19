@@ -1,14 +1,18 @@
 package com.above.service.impl;
 
+import com.above.dto.InternshipApplyInfoDto;
 import com.above.dto.InternshipCheckDto;
+import com.above.dto.InternshipInfoFillDto;
 import com.above.dto.UserDto;
 import com.above.po.Area;
 import com.above.po.InternshipInfoByStudent;
 import com.above.dao.InternshipInfoByStudentMapper;
 import com.above.po.InternshipInfoByStudentLog;
+import com.above.po.StudentInfo;
 import com.above.service.AreaService;
 import com.above.service.InternshipInfoByStudentLogService;
 import com.above.service.InternshipInfoByStudentService;
+import com.above.service.StudentInfoService;
 import com.above.utils.CommonResult;
 import com.above.vo.BaseVo;
 import com.above.vo.InternshipApplicationVo;
@@ -39,6 +43,8 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
     private InternshipInfoByStudentLogService internshipInfoByStudentLogService;
     @Autowired
     private AreaService areaService;
+    @Autowired
+    private StudentInfoService studentInfoService;
 
     /*----------------------学生------------------------*/
 
@@ -96,6 +102,10 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
         Integer isAboral = vo.getIsAboral();
         //是否有特殊专业情况
         Integer isSpecial = vo.getIsSpecial();
+        //经度
+        String  longitude = vo.getLongitude();
+        //纬度
+        String  latitude = vo.getLatitude();
         //创建人
         Integer createBy = userDto.getId();
         //更新人
@@ -149,6 +159,8 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
         internshipInfoByStudent.setEndTime(endTime);
         internshipInfoByStudent.setApproach(approach);
         internshipInfoByStudent.setIsAboral(isAboral);
+        internshipInfoByStudent.setLongitude(longitude);
+        internshipInfoByStudent.setLatitude(latitude);
         //实习薪资
         if(vo.getJobBriefInfo()!=null) {
             String salary = vo.getSalary();
@@ -195,7 +207,12 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
             for(InternshipInfoByStudent infoByStudent:list){
                 //如果是免实习申请，返回
                 if(infoByStudent.getInternshipType().equals(2)){
-                    return CommonResult.error(500,"已经存在免实习申请，无法进行实习申请操作");
+                    if(infoByStudent.getStatus().equals(1)){
+                        return CommonResult.error(500,"已经存在审核中免实习申请，无法进行实习申请操作");
+                    }else if(infoByStudent.getStatus().equals(3)){
+                        //审核通过
+                        return CommonResult.error(500,"已经存在已通过免实习申请，无法进行实习申请操作");
+                    }
                 }else if(infoByStudent.getInternshipType().equals(1)){
                     //审核中
                     if(infoByStudent.getStatus().equals(1)){
@@ -219,6 +236,7 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
         }
         return CommonResult.success("操作成功");
     }
+
     /**
      * 删除实习申请
      * */
@@ -246,21 +264,18 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
      * */
     @Override
     public CommonResult<Object> internshipApplyDisplaySingle(InternshipApplicationVo vo, UserDto userDto) {
-        Integer internshipId = vo.getInternshipId();
         Map<String,Object> map = new HashMap<>();
-        InternshipInfoByStudent internshipInfoByStudent = this.getById(internshipId);
-        Integer companyAreaId = internshipInfoByStudent.getCompanyCode();
-        Area area = areaService.getById(companyAreaId);
-//        String areaName = null;
-//        areaName+=area.getName();
-//        Area area2 = areaService.getById(area.getPid());
-//        areaName+=area2.getName();
-//        internshipInfoByStudent.setAreaName(areaName);
-        if(internshipInfoByStudent!=null){
-            if(internshipInfoByStudent.getDeleted().equals(BaseVo.DELETE)){
+        if(userDto.getUserRoleDto().getRoleCode().equals("student")){
+            vo.setStudentId(userDto.getId());
+        }else if(userDto.getUserRoleDto().getRoleCode().equals("adviser")){
+            vo.setTeacherId(userDto.getId());
+        }
+        InternshipApplyInfoDto applyInfoDto = this.baseMapper.displaySingleInternshipApplyInfo(vo);
+        if(applyInfoDto!=null){
+            if(applyInfoDto.getDeleted().equals(BaseVo.DELETE)){
                 return CommonResult.error(500,"该条实习申请不存在");
             }
-            map.put("internship",internshipInfoByStudent);
+            map.put("internship",applyInfoDto);
         }else{
             return CommonResult.error(500,"查无此条");
         }
@@ -867,9 +882,10 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
         queryWrapper.eq("deleted",BaseVo.UNDELETE).eq("relation_plan_id",relationPlanId).eq("relation_student_id",studentId).eq("internship_type",3);
         List<InternshipInfoByStudent> list = this.list(queryWrapper);
         for(InternshipInfoByStudent infoByStudent:list){
-            //如果是免实习申请，返回
             if(infoByStudent.getInternshipType().equals(3)){
-                return CommonResult.error(500,"已经存在就业上报，无法进行再次上报");
+                if(infoByStudent.getStatus().equals(1) || infoByStudent.getStatus().equals(3)){
+                    return CommonResult.error(500,"已经存在审核中或已通过就业上报，无法进行再次上报");
+                }
             }
         }
         boolean save = this.save(internshipInfoByStudent);
@@ -883,6 +899,7 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
     /**
      * 展示就业上报内容
      * */
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
     @Override
     public CommonResult<Object> employmentReportedDisplay(InternshipApplicationVo vo, UserDto userDto) {
         Integer internshipId = vo.getInternshipId();
@@ -900,9 +917,10 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
     }
 
     /**
-     * 就业上报列表审核列表（教师端）
+     * 就业上报列表（学生端）
      * */
     @Override
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
     public CommonResult<Object> employmentReportedDisplayList(InternshipApplicationVo vo, UserDto userDto) {
         Integer relationPlanId = vo.getRelationPlanId();
         Integer relationStudentId = userDto.getStudentInfo().getId();
@@ -1000,6 +1018,23 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
         }else{
             return CommonResult.error(500,"查无此条");
         }
+        //判断是第一次审核的通过审核的实习申请
+        if(internshipInfoByStudent.getInternshipType().equals(1)){
+            if(vo.getCheckStatus().equals(1)){
+                if(vo.getInternshipStatus().equals(1)){
+                    Integer studentId = internshipInfoByStudent.getRelationStudentId();
+                    StudentInfo studentInfo = studentInfoService.getById(studentId);
+                    if(studentInfo != null){
+                        studentInfo.setStudyStatus(1);
+                }
+                    boolean save = studentInfoService.updateById(studentInfo);
+                    if(!save){
+                        return CommonResult.error(500,"增加学生上岗信息失败");
+                    }
+                }
+            }
+        }
+
         boolean flag = this.updateById(internshipInfoByStudent);
         if(!flag){
             return CommonResult.error(500,"审核操作失败");
@@ -1033,5 +1068,71 @@ public CommonResult<Object> countInternshipInfoCheck(InternshipApplicationVo vo,
     return CommonResult.success(map);
 }
 
+/**
+*@author: GG
+*@data: 2022/7/19 10:24
+*@function:获取岗位审核中三个列表的未审核数量
+*/
+@Override
+public CommonResult<Object> countCheck(InternshipApplicationVo vo, UserDto userDto) {
+    vo.setIsCheck(0);
+    //申请类型 1-普通申请 2-免实习申请 3-就业上报 4-实习总评填写信息
+    vo.setInternshipType(1);
+    vo.setTeacherId(userDto.getTeacherInfo().getId());
+    /**1-第一次审核 2-岗位审核 3-企业审核*/
+    vo.setCheckStatus(1);
+    Integer count1 = this.baseMapper.countInternShipInfoUnCheck(vo);
+    vo.setCheckStatus(2);
+    Integer count2 = this.baseMapper.countInternShipInfoUnCheck(vo);
+    vo.setCheckStatus(3);
+    Integer count3 = this.baseMapper.countInternShipInfoUnCheck(vo);
+    Map<String,Object> map = new HashMap<>();
+    map.put("normalCount",count1);
+    map.put("jobCount",count2);
+    map.put("companyCount",count3);
+    return CommonResult.success(map);
+    }
 
+    /**
+    *@author: GG
+    *@data: 2022/7/19 10:24
+    *@function:获取实习岗位已填报学生列表
+    */
+    @Override
+    public CommonResult<Object> getInternshipApplyInfoFilled(InternshipApplicationVo vo, UserDto userDto) {
+//        Integer planId = userDto.getInternshipPlanInfo().getId();
+        Integer planId = vo.getPlanId();
+        Integer teacherId = userDto.getTeacherInfo().getId();
+        vo.setPlanId(planId);
+        vo.setTeacherId(teacherId);
+        List<InternshipInfoFillDto> list = this.baseMapper.getInternshipApplyInfoFilled(vo);
+        Integer count = this.baseMapper.getInternshipApplyInfoFilledCount(vo);
+        Map<String,Object> map = new HashMap<>();
+        map.put(BaseVo.LIST,list);
+        map.put(BaseVo.TOTAL,count);
+        map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),count));
+        return CommonResult.success(map);
+    }
+    
+    
+    /**
+    *@author: GG
+    *@data: 2022/7/19 10:24
+    *@function:获取实习岗位未填报学生列表
+    */
+    @Override
+    public CommonResult<Object> getInternshipApplyInfoUnFill(InternshipApplicationVo vo, UserDto userDto) {
+//        Integer planId = userDto.getInternshipPlanInfo().getId();
+        Integer planId = vo.getPlanId();
+        Integer teacherId = userDto.getTeacherInfo().getId();
+        vo.setPlanId(planId);
+        vo.setTeacherId(teacherId);
+        List<InternshipInfoFillDto> list = this.baseMapper.getInternshipApplyInfoUnFill(vo);
+        Integer count = this.baseMapper.getInternshipApplyInfoUnFillCount(vo);
+        Map<String,Object> map = new HashMap<>();
+        map.put(BaseVo.LIST,list);
+        map.put(BaseVo.TOTAL,count);
+        map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),count));
+        return CommonResult.success(map);
+    }
 }

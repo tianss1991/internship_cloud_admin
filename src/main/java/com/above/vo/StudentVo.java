@@ -12,9 +12,6 @@ import java.util.List;
 @Data
 public class StudentVo extends BaseVo{
 
-    @ApiModelProperty("学生id")
-    private Integer studentId;
-
     @ApiModelProperty("学号")
     private String studentNumber;
 

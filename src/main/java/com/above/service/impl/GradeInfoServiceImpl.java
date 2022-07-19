@@ -139,7 +139,13 @@ public class GradeInfoServiceImpl extends ServiceImpl<GradeInfoMapper, GradeInfo
      * */
     @Override
     public CommonResult<Object> queryGradeList(GradeVo vo, UserDto userDto) {
-        Integer schoolId = vo.getSchoolId();
+        Integer schoolId = 0;
+        if(userDto.getUserRoleDto().getRoleCode().equals("admin")){
+            schoolId = vo.getSchoolId();
+        }else if(userDto.getUserRoleDto().getRoleCode().equals("schoolAdmin") || userDto.getUserRoleDto().getRoleCode().equals("departmentAdmin")){
+            schoolId = userDto.getTeacherInfo().getSchoolId();
+        }
+
         Map<String,Object> map = new HashMap<>();
         QueryWrapper<GradeInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("deleted",BaseVo.UNDELETE).eq("school_id",schoolId);

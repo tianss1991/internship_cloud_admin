@@ -15,7 +15,7 @@ import lombok.experimental.Accessors;
 
 /**
  * <p>
- * 教职工信息表
+ * 教师信息表
  * </p>
  *
  * @author mp
@@ -24,7 +24,7 @@ import lombok.experimental.Accessors;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Accessors(chain = true)
-@ApiModel(value="TeacherInfo对象", description="教职工信息表")
+@ApiModel(value="TeacherInfo对象", description="教师信息表")
 public class TeacherInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -65,7 +65,7 @@ public class TeacherInfo implements Serializable {
     @TableField("department_name")
     private String departmentName;
 
-    @ApiModelProperty(value = "教职工编制类别")
+    @ApiModelProperty(value = "教师编制类别")
     @TableField("work_type")
     private String workType;
 

@@ -1,6 +1,8 @@
 package com.above.dto;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -12,6 +14,9 @@ import java.util.Date;
 
 @Data
 public class PayrollDto  {
+
+    @ApiModelProperty(value = "工资单id")
+    private Integer id;
 
     @ApiModelProperty(value = "年级")
     private String gradeYear;

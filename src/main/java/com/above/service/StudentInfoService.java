@@ -1,9 +1,9 @@
 package com.above.service;
 
 import com.above.dto.UserDto;
+import com.above.exception.OptionDateBaseException;
 import com.above.po.StudentInfo;
 import com.above.utils.CommonResult;
-import com.above.vo.LeaveApplyInfoVo;
 import com.above.vo.StudentVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,22 +21,17 @@ public interface StudentInfoService extends IService<StudentInfo> {
     /**
      * 增加学生(管理员)
      * */
-    CommonResult<Object> addStudent(StudentVo vo, UserDto userDto);
+    CommonResult<Object> addStudent(StudentVo vo, UserDto userDto) throws OptionDateBaseException;
 
     /**
      * 修改学生(管理员)
      * */
-    CommonResult<Object> modifyStudent(StudentVo vo, UserDto userDto);
+    CommonResult<Object> modifyStudent(StudentVo vo, UserDto userDto)throws OptionDateBaseException;
 
     /**
      * 删除学生(管理员)
      * */
-    CommonResult<Object> deleteStudent(StudentVo vo, UserDto userDto);
-
-//    /**
-//     * 批量删除学生(管理员)
-//     * */
-//    CommonResult<Object> deleteStudentByIds(StudentVo vo, UserDto userDto);
+    CommonResult<Object> deleteStudent(StudentVo vo, UserDto userDto) throws OptionDateBaseException;
 
     /**
      * 显示学生列表（分页）(管理员)

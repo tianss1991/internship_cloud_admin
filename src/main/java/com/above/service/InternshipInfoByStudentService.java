@@ -38,6 +38,21 @@ public interface InternshipInfoByStudentService extends IService<InternshipInfoB
      * */
     CommonResult<Object> jobModifyAndCompanyModify(InternshipApplicationVo vo, UserDto userDto);
 
+    /**
+     *@author: GG
+     *@data: 2022/7/19 10:24
+     *@function:获取实习岗位已填报学生列表
+     */
+    CommonResult<Object> getInternshipApplyInfoFilled(InternshipApplicationVo vo, UserDto userDto);
+
+
+    /**
+     *@author: GG
+     *@data: 2022/7/19 10:24
+     *@function:获取实习岗位未填报学生列表
+     */
+    CommonResult<Object> getInternshipApplyInfoUnFill(InternshipApplicationVo vo, UserDto userDto);
+
     /**------------免实习------------*/
     /**
      * 提交及修改免实习申请
@@ -87,6 +102,12 @@ public interface InternshipInfoByStudentService extends IService<InternshipInfoB
     *@function:
     */
     CommonResult<Object> countInternshipInfoCheck(InternshipApplicationVo vo, UserDto userDto);
+    /**
+    *@author: GG
+    *@data: 2022/7/12 9:22
+    *@function:拿实习申请中实习审核、企业修改审核、岗位修改审核的数量
+    */
+    CommonResult<Object> countCheck(InternshipApplicationVo vo, UserDto userDto);
 
 
 

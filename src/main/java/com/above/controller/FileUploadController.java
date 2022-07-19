@@ -1,24 +1,23 @@
 package com.above.controller;
 
-import com.above.dto.UserDto;
+import com.above.config.server.ServerConfig;
+import com.above.service.FileInfoService;
 import com.above.utils.CommonResult;
 import com.above.utils.FileUtil;
-import com.above.utils.MyStringUtils;
 import com.above.utils.ResourcesUtil;
 import com.above.vo.FileVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.apache.shiro.SecurityUtils;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,10 +33,13 @@ import java.util.Map;
 @Api(tags = "文件接口")
 public class FileUploadController {
 
+    @Autowired
+    private FileInfoService fileInfoService;
+
     /**
      * 接口地址
      */
-    private static final String URL = ResourcesUtil.getValue("fileConfig", "url");
+    private static final String URL = ServerConfig.apiBaseUrl;
 
     /**
      * @Description: 上传文件到本地
@@ -52,6 +54,9 @@ public class FileUploadController {
     @PostMapping("/upload")
     public CommonResult<Object> uploadToObs(FileVo vo) throws Exception {
 
+        if (vo == null){
+            return  CommonResult.error(500,"缺少文件");
+        }
         //获取文件
         List<MultipartFile> files = vo.getFiles();
         if (files == null){
@@ -67,6 +72,9 @@ public class FileUploadController {
         String url = FileUtil.saveFile(multipartFile, vo);
 
         urlList.add(url);
+        //保存文件信息用户后续前端回显使用
+        fileInfoService.saveFileInfo(vo);
+
         return CommonResult.success(urlList);
 
     }
@@ -93,7 +101,7 @@ public class FileUploadController {
         switch (vo.getTemplateType()){
             case 1:
                 urlName = "downloadTeacherTemplate";
-                fileName="教职工导入模板.xlsx";
+                fileName="教师导入模板.xlsx";
                 break;
             case 2:
                 urlName = "downloadSchoolTemplate";

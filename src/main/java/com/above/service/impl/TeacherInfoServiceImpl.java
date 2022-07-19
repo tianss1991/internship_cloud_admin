@@ -39,7 +39,7 @@ import java.util.*;
 
 /**
  * <p>
- * 教职工信息表 服务实现类
+ * 教师信息表 服务实现类
  * </p>
  *
  * @author mp
@@ -93,20 +93,23 @@ public class TeacherInfoServiceImpl extends ServiceImpl<TeacherInfoMapper, Teach
         //邮箱
         String mail = teacherVo.getMail();
 
-        if(userDto.getUserRoleDto().getRoleCode().equals(AuthRole.SCHOOL_ADMIN)){
+        if(roleCode.equals(AuthRole.SCHOOL_ADMIN)){
             List<Integer> schoolIds = userDto.getSchoolIds();
             teacherVo.setSchoolId(schoolIds.get(0));
         }
         //如果是二级学院管理、则关联本二级学院
-        if (userDto.getUserRoleDto().getRoleCode().equals(AuthRole.DEPARTMENT_ADMIN)){
+        if (roleCode.equals(AuthRole.DEPARTMENT_ADMIN)){
             List<Integer> departmentIds = userDto.getDepartmentIds();
             teacherVo.setDepartmentId(departmentIds.get(0));
         }
 
 //        //判断关联参数是否有传
-//        if (teacherVo.getDepartmentId() == null){
-//            return CommonResult.error(500,"缺少二级学院id");
-//        }
+        if (teacherVo.getSchoolId() == null){
+            return CommonResult.error(500,"缺少学校id");
+        }
+        if (teacherVo.getDepartmentId() == null){
+            return CommonResult.error(500,"缺少二级学院id");
+        }
 
         //关联信息
         Integer schoolId = teacherVo.getSchoolId();
@@ -401,20 +404,20 @@ public class TeacherInfoServiceImpl extends ServiceImpl<TeacherInfoMapper, Teach
         Collection<TeacherInfo> teacherInfos = super.getBaseMapper().selectBatchIds(teacherIdList);
         //判断是否全部都有查出
         if (teacherIdList.size()>teacherInfos.size()){
-            return CommonResult.error(500,"有教职工已被删除");
+            return CommonResult.error(500,"有教师已被删除");
         }
         //循环修改为删除状态
         for (TeacherInfo info:teacherInfos) {
-            // 查看该教职工是否状态为删除
+            // 查看该教师是否状态为删除
             if (info.getDeleted()==1) {
-                return CommonResult.error(500, "【" + info.getTeacherName() + "】该教职工已删除");
+                return CommonResult.error(500, "【" + info.getTeacherName() + "】该教师已删除");
             }
             //设置为删除状态
             info.setDeleted(1);
             //设置更新人
             info.setUpdateBy(updateBy);
         }
-        //修改教职工信息
+        //修改教师信息
         boolean i = super.updateBatchById(teacherInfos);
         //若修改后进入try-catch中，
 //        try{
@@ -582,7 +585,7 @@ public class TeacherInfoServiceImpl extends ServiceImpl<TeacherInfoMapper, Teach
     }
 
     /**
-     * @Description: 导入教职工
+     * @Description: 导入教师
      * @Author: LZH
      * @Date: 2022/1/13 16:34
      */
@@ -671,13 +674,13 @@ public class TeacherInfoServiceImpl extends ServiceImpl<TeacherInfoMapper, Teach
                     int count = userAccountService.count(accountQueryWrapper);
                     //若存在则返回
                     if (count>0){
-                        return CommonResult.error(500,name+"添加失败，该教职工【"+workNumber+"】工号重复");
+                        return CommonResult.error(500,name+"添加失败，该教师【"+workNumber+"】工号重复");
                     }
 
                     if (userAccounts.size() > 0){
                         for (UserAccount info:userAccounts) {
                             if (info.getAccountNumber().equals(workNumber)){
-                                return CommonResult.error(500,name+",该教职工【"+workNumber+"】工号重复,导入信息中请确保工号唯一");
+                                return CommonResult.error(500,name+",该教师【"+workNumber+"】工号重复,导入信息中请确保工号唯一");
                             }
                         }
                     }
@@ -1180,7 +1183,7 @@ public class TeacherInfoServiceImpl extends ServiceImpl<TeacherInfoMapper, Teach
     /**
      * @param userDto
      * @param teacherVo
-     * @Description: 根据学校id删除教职工
+     * @Description: 根据学校id删除教师
      * @Author: LZH
      * @Date: 2022/4/27 10:53
      */
@@ -1205,7 +1208,7 @@ public class TeacherInfoServiceImpl extends ServiceImpl<TeacherInfoMapper, Teach
     /**
      * @param userDto
      * @param teacherVo
-     * @Description: 根据学校id删除教职工
+     * @Description: 根据学校id删除教师
      * @Author: LZH
      * @Date: 2022/4/27 10:53
      */

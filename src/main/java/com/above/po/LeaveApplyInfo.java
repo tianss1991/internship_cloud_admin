@@ -7,8 +7,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -21,7 +19,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author mp
- * @since 2022-06-21
+ * @since 2022-07-14
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -31,12 +29,11 @@ public class LeaveApplyInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @TableId(value="id",type= IdType.AUTO)
     @ApiModelProperty(value = "编号")
-    @TableField("id")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty(value = "申请状态 1-待审核 2-驳回 3-通过（修改打卡状态）")
+    @ApiModelProperty(value = "申请状态: 0-草稿 1-待审核 2-驳回 3-通过（修改打卡状态）")
     @TableField("status")
     private Integer status;
 
@@ -46,12 +43,10 @@ public class LeaveApplyInfo implements Serializable {
 
     @ApiModelProperty(value = "开始时间")
     @TableField("start_time")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private Date startTime;
 
     @ApiModelProperty(value = "结束时间")
     @TableField("end_time")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private Date endTime;
 
     @ApiModelProperty(value = "原因")
@@ -76,7 +71,6 @@ public class LeaveApplyInfo implements Serializable {
 
     @ApiModelProperty(value = "创建时间")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private Date createTime;
 
     @ApiModelProperty(value = "更新人")
@@ -85,12 +79,23 @@ public class LeaveApplyInfo implements Serializable {
 
     @ApiModelProperty(value = "更新时间")
     @TableField(value = "update_time", fill = FieldFill.UPDATE)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private Date updateTime;
 
     @ApiModelProperty(value = "逻辑删除 0-未删除 1-已删除")
     @TableField(value = "deleted", fill = FieldFill.INSERT)
     private Integer deleted;
+
+    @ApiModelProperty(value = "关联实习计划id")
+    @TableField("plan_id")
+    private Integer planId;
+
+    @ApiModelProperty(value = "关联学生id")
+    @TableField("student_id")
+    private Integer studentId;
+
+    @ApiModelProperty(value = "关联实习信息id")
+    @TableField("internship_id")
+    private Integer internshipId;
 
 
 }

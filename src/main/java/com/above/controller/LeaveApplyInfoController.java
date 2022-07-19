@@ -5,7 +5,6 @@ import com.above.dto.UserDto;
 import com.above.service.LeaveApplyInfoService;
 import com.above.utils.CommonResult;
 import com.above.utils.MyStringUtils;
-import com.above.vo.GradeVo;
 import com.above.vo.LeaveApplyInfoVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -241,11 +240,11 @@ public class LeaveApplyInfoController {
 //                return CommonResult.error(500,"缺少审核状态参数");
 //            }
 //        }
-//        try{
+        try{
             return leaveApplyInfoService.leaveApplyListByInstruct(vo,userDto);
-//        }catch (Exception e){
-//            return CommonResult.error(500,"辅导员端请假申请列表显示失败");
-//        }
+        }catch (Exception e){
+            return CommonResult.error(500,"辅导员端请假申请列表显示失败");
+        }
     }
 }
 

@@ -1,8 +1,9 @@
 package com.above.dao;
 
-import com.above.bean.theory.ClassInfoDto;
-import com.above.dto.ClassListWithOther;
+import com.above.dto.ClassDto;
+import com.above.dto.ClassInfoDto;
 import com.above.po.ClassInfo;
+import com.above.po.ClassTeacherRelation;
 import com.above.vo.BaseVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.springframework.data.repository.query.Param;
@@ -25,7 +26,15 @@ public interface ClassInfoMapper extends BaseMapper<ClassInfo> {
      * @Author: LZH
      * @Date: 2022/1/18 15:20
      */
-    List<ClassListWithOther> getClassListWithOther(@Param("vo") BaseVo vo);
+    List<ClassInfoDto> getClassListWithOther(@Param("vo") BaseVo vo);
+
+    /**
+     * @Description: 获取班级列表总数
+     * @Author: LZH
+     * @Date: 2022/7/18 16:50
+     */
+    Integer getClassListWithOtherCount(@Param("vo") BaseVo vo);
+
     /**
      * @Description: 班级列表总数
      * @Author: LZH
@@ -37,4 +46,16 @@ public interface ClassInfoMapper extends BaseMapper<ClassInfo> {
      * @return
      */
     List<ClassInfoDto> getClassInfoDtoList();
+
+    /**
+     * 获取某班级班主任列表
+     * @return 列表
+     */
+    List<ClassTeacherRelation> getClassTeacherList(@Param("classId")Integer classId);
+    /**
+     * 获取某班级辅导员列表
+     * @return 列表
+     */
+    List<ClassTeacherRelation> getClassLeaderList(@Param("classId")Integer classId);
+
 }

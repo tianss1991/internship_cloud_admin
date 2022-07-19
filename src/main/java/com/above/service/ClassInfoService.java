@@ -1,6 +1,7 @@
 package com.above.service;
 
-import com.above.bean.theory.ClassInfoDto;
+
+import com.above.dto.ClassInfoDto;
 import com.above.dto.UserDto;
 import com.above.po.ClassInfo;
 import com.above.utils.CommonResult;

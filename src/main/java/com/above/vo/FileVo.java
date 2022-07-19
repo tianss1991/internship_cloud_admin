@@ -23,7 +23,7 @@ public class FileVo {
     private static final String STATION_LETTER ="/fileInfo/station_letter/";
 
     @ApiModelProperty("文件类型 1-用户头像(图片) 2-实习申请（文件） 3-请假申请（图片） 4-学校公告（文件）5-站内信（文件）")
-    private int fileType;
+    private Integer fileType;
 
     @ApiModelProperty("文件上传参数")
     private List<MultipartFile> files;
@@ -37,7 +37,7 @@ public class FileVo {
     @ApiModelProperty("文件保存地址")
     private String url;
 
-    @ApiModelProperty("模板类型 1-学生 2- 教职工 3-院校信息 4-题库 5-教师分配")
+    @ApiModelProperty("模板类型 1-学生 2- 教师 3-院校信息 4-题库 5-教师分配")
     private Integer templateType;
 
     public void setFileType(int fileType) {

@@ -12,6 +12,7 @@ import com.above.service.AuthRoleService;
 import com.above.service.UserService;
 import com.above.service.WechatUserService;
 import com.above.utils.PasswordCryptoTool;
+import com.above.utils.RedisUtils;
 import com.alibaba.excel.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,6 @@ import java.util.Map;
 public class CustomRealm extends AuthorizingRealm {
 
     @Autowired
-    @Lazy
     private UserService userService;
     @Autowired
     @Lazy
@@ -169,19 +169,20 @@ public class CustomRealm extends AuthorizingRealm {
         String redisCode = (String) session.getAttribute(nameOrPhone);
         if (!redisCode.equals("9999")){
             // 获取缓存中的验证码
-            Map<String, Object> map = (Map<String, Object>) session.getAttribute(SmsConfig.REDIS_CODE + nameOrPhone);
-            log.info("sessionid"+session.getId());
-            // 获取传入的code
-            if (map == null || map.get(codeStr) == null) {
-                log.error("====>1");
-                throw new RedisException(RedisException.CODE_EXPIRE);
-            }
-            String phoneCodeByCache = (String) map.get(codeStr);
-            // 判断是否过期
-            if (RedisException.EXPIRETIME < (System.currentTimeMillis() - (Long) map.get(timeStr))) {
-                session.removeAttribute(SmsConfig.REDIS_CODE + nameOrPhone);
-                throw new RedisException(RedisException.CODE_EXPIRE);
-            }
+//            JSONObject map = (JSONObject) session.getAttribute(SmsConfig.REDIS_CODE + nameOrPhone);
+//            log.info("sessionid"+session.getId());
+//            // 获取传入的code
+//            if (map == null || map.get(codeStr) == null) {
+//                log.error("====>1");
+//                throw new RedisException(RedisException.CODE_EXPIRE);
+//            }
+//            String phoneCodeByCache = (String) map.get(codeStr);
+//            // 判断是否过期
+//            if (RedisException.EXPIRETIME < (System.currentTimeMillis() - (Long) map.get(timeStr))) {
+//                session.removeAttribute(SmsConfig.REDIS_CODE + nameOrPhone);
+//                throw new RedisException(RedisException.CODE_EXPIRE);
+//            }
+            String phoneCodeByCache = RedisUtils.get(SmsConfig.REDIS_CODE + nameOrPhone);
             // 验证是否验证码一致
             if (!phoneCodeByCache.equalsIgnoreCase(redisCode)) {
                 throw new RedisException(RedisException.CODE_ERROR);
@@ -276,5 +277,6 @@ public class CustomRealm extends AuthorizingRealm {
         return simpleAuthenticationInfo;
 
     }
+
 
 }

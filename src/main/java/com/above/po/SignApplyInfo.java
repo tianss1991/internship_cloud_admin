@@ -29,17 +29,26 @@ public class SignApplyInfo implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public static final Integer DRAFT = 0;
+    public static final Integer AUDITING = 1;
+    public static final Integer FAIL = 2;
+    public static final Integer SUCCESS = 3;
+
     @ApiModelProperty(value = "编号")
     @TableField("id")
     private Integer id;
 
     @ApiModelProperty(value = "学生id")
     @TableField("student_id")
-    private String studentId;
+    private Integer studentId;
 
     @ApiModelProperty(value = "关联实习id")
     @TableField("internship_id")
-    private String internshipId;
+    private Integer internshipId;
+
+    @ApiModelProperty(value = "关联实习计划id")
+    @TableField("internship_plan_id")
+    private Integer internshipPlanId;
 
     @ApiModelProperty(value = "申请类型 1-补卡 2-请假")
     @TableField("apply_type")
@@ -57,9 +66,9 @@ public class SignApplyInfo implements Serializable {
     @TableField("img_url")
     private String imgUrl;
 
-    @ApiModelProperty(value = "打卡类型 1-上班打卡 2-下班打卡")
-    @TableField("sign_type")
-    private Integer signType;
+    @ApiModelProperty(value = "打卡id")
+    @TableField("sign_id")
+    private Integer signId;
 
     @ApiModelProperty(value = "创建人")
     @TableField("create_by")
@@ -79,7 +88,7 @@ public class SignApplyInfo implements Serializable {
 
     @ApiModelProperty(value = "申请状态 1-待审核 2-驳回 3-通过（打卡记录改为正常）")
     @TableField("status")
-    private String status;
+    private Integer status;
 
     @ApiModelProperty(value = "逻辑删除 0-未删除 1-已删除")
     @TableField(value = "deleted", fill = FieldFill.INSERT)

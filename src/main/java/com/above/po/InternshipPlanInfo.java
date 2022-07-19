@@ -19,7 +19,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author mp
- * @since 2022-06-21
+ * @since 2022-07-15
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -30,7 +30,7 @@ public class InternshipPlanInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "编号")
-    @TableField("id")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     @ApiModelProperty(value = "学校编号;关联学校id")
@@ -53,9 +53,9 @@ public class InternshipPlanInfo implements Serializable {
     @TableField("plan_title")
     private String planTitle;
 
-    @ApiModelProperty(value = "层次 1-离职")
+    @ApiModelProperty(value = "层次(存字符串)")
     @TableField("gradation")
-    private Integer gradation;
+    private String gradation;
 
     @ApiModelProperty(value = "开始时间")
     @TableField("start_time")
@@ -140,6 +140,26 @@ public class InternshipPlanInfo implements Serializable {
     @ApiModelProperty(value = "逻辑删除 0-未删除 1-已删除")
     @TableField(value = "deleted", fill = FieldFill.INSERT)
     private Integer deleted;
+
+    @ApiModelProperty(value = "打卡次数（2/4）默认2次")
+    @TableField("sign_times")
+    private Integer signTimes;
+
+    @ApiModelProperty(value = "状态，0-草稿 1-审核中 2-审核失败 3-审核通过")
+    @TableField("status")
+    private Integer status;
+
+    @ApiModelProperty(value = "失败理由")
+    @TableField("fail_reason")
+    private String failReason;
+
+    @ApiModelProperty(value = "辅导员寻访次数")
+    @TableField("instructor_size")
+    private Integer instructorSize;
+
+    @ApiModelProperty(value = "指导老师寻访次数")
+    @TableField("adviser_size")
+    private Integer adviserSize;
 
 
 }

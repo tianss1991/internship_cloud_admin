@@ -148,7 +148,7 @@ public class InternshipInfoByStudentController {
      * @Date: 2022/06/22 13:47
      */
     @ApiOperation("展示单条实习申请")
-    @RequiresRoles(value = {"student"}, logical = Logical.OR)
+    @RequiresRoles(value = {"student","adviser"}, logical = Logical.OR)
     @GetMapping("internshipApplyDisplaySingle")
     public CommonResult<Object> internshipApplyDisplaySingle(HttpServletRequest request, InternshipApplicationVo vo){
         //从session获取user
@@ -160,11 +160,11 @@ public class InternshipInfoByStudentController {
         if (vo.getInternshipId() == null){
             return CommonResult.error(500,"缺少实习申请id");
         }
-        try{
+//        try{
             return internshipInfoByStudentService.internshipApplyDisplaySingle(vo,userDto);
-        }catch (RuntimeException e){
-            return CommonResult.error(500,"展示单条实习申请出错");
-        }
+//        }catch (RuntimeException e){
+//            return CommonResult.error(500,"展示单条实习申请出错");
+//        }
     }
 
     /**
@@ -173,7 +173,7 @@ public class InternshipInfoByStudentController {
      * @Date: 2022/06/22 13:47
      */
     @ApiOperation("教师审核")
-    @RequiresRoles(value = {"teacher"}, logical = Logical.OR)
+    @RequiresRoles(value = {"teacher","adviser"}, logical = Logical.OR)
     @PostMapping("internshipInfoCheck")
     public CommonResult<Object> internshipInfoCheck(HttpServletRequest request, @RequestBody InternshipApplicationVo vo){
         //从session获取user
@@ -191,8 +191,10 @@ public class InternshipInfoByStudentController {
         if (vo.getCheckStatus() == null){
             return CommonResult.error(500,"缺少修改类别");
         }
-        if (vo.getFailReason() == null){
-            return CommonResult.error(500,"缺少失败理由");
+        if(vo.getInternshipStatus().equals(0)){
+            if (vo.getFailReason() == null){
+                return CommonResult.error(500,"缺少失败理由");
+            }
         }
         try{
             return internshipInfoByStudentService.internshipInfoCheck(vo,userDto);
@@ -289,7 +291,7 @@ public class InternshipInfoByStudentController {
      * @Date: 2022/06/22 16:07
      */
     @ApiOperation("展示单条免实习申请")
-    @RequiresRoles(value = {"student"}, logical = Logical.OR)
+    @RequiresRoles(value = {"student","adviser"}, logical = Logical.OR)
     @GetMapping("dismissInternshipApplyDisplaySingle")
     public CommonResult<Object> dismissInternshipApplyDisplaySingle(HttpServletRequest request, InternshipApplicationVo vo){
         //从session获取user
@@ -308,34 +310,6 @@ public class InternshipInfoByStudentController {
         }
     }
 
-
-//    /**
-//     * @Description: 免实习岗位列表
-//     * @Author: GG
-//     * @Date: 2022/06/22 16:47
-//     */
-//    @ApiOperation("免实习岗位列表")
-//    @RequiresRoles(value = {"student"}, logical = Logical.OR)
-//    @GetMapping("dismissInternshipApplyDisplayList")
-//    public CommonResult<Object> dismissInternshipApplyDisplayList(HttpServletRequest request, InternshipApplicationVo vo){
-//        //从session获取user
-//        UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
-//        //判断参数
-//        if (vo == null){
-//            return CommonResult.error(500,"缺少参数");
-//        }
-//        if (vo.getRelationPlanId() == null){
-//            return CommonResult.error(500,"缺少实习计划id");
-//        }
-//        if (vo.getRelationStudentId() == null){
-//            return CommonResult.error(500,"缺少学生id");
-//        }
-//        try{
-//            return internshipInfoByStudentService.dismissInternshipApplyDisplayList(vo,userDto);
-//        }catch (RuntimeException e){
-//            return CommonResult.error(500,"免实习岗位列表展示出错");
-//        }
-//    }
 
     /**
      * @Description: 学生撤回申请
@@ -395,7 +369,7 @@ public class InternshipInfoByStudentController {
      * @Date: 2022/06/24 16:37
      */
     @ApiOperation("实习申请、实习岗位修改与企业变更申请、免实习申请、就业上报审核列表（教师）")
-    @RequiresRoles(value = {"teacher","student","instructor"}, logical = Logical.OR)
+    @RequiresRoles(value = {"teacher","student","instructor","adviser"}, logical = Logical.OR)
     @GetMapping("jobModifyAndCompanyModifyCheckList")
     public CommonResult<Object> jobModifyAndCompanyModifyCheckList(HttpServletRequest request, InternshipApplicationVo vo){
         //从session获取user
@@ -448,28 +422,23 @@ public class InternshipInfoByStudentController {
     }
 
     /**
-     * @Description: 就业上报列表审核列表（教师端）
+     * @Description: 展示就业上报列表（学生）
      * @Author: GG
      * @Date: 2022/06/29 10:12
      */
-    @ApiOperation("就业上报列表审核列表（教师端）")
-    @RequiresRoles(value = {"student","teacher"}, logical = Logical.OR)
+    @ApiOperation("展示就业上报列表（学生）")
+    @RequiresRoles(value = {"student"}, logical = Logical.OR)
     @GetMapping("employmentReportedDisplayList")
     public CommonResult<Object> employmentReportedDisplayList(HttpServletRequest request, InternshipApplicationVo vo){
         //从session获取user
         UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
         //判断参数
-        if (vo == null){
-            return CommonResult.error(500,"缺少参数");
-        }
-        if (vo.getRelationPlanId() == null){
-            return CommonResult.error(500,"缺少实习计划id");
-        }
-//
+        try{
             return internshipInfoByStudentService.employmentReportedDisplayList(vo,userDto);
-//        }catch (RuntimeException e){
-//            return CommonResult.error(500,"展示就业上报列表出错");        try{
-//        }
+        }catch (RuntimeException e){
+            return CommonResult.error(500,"展示就业上报列表出错");
+        }
+
     }
 
     /**
@@ -563,6 +532,78 @@ public class InternshipInfoByStudentController {
             return CommonResult.error(500,"实习岗位数量显示异常");
         }
 
+    }
+
+    /**
+     *@author: GG
+     *@data: 2022/7/5 11:26
+     *@function:实习申请中三个列表的未审核数量
+     */
+    @ApiOperation("实习申请中三个列表的未审核数量")
+    @RequiresRoles(value = {"adviser","instructor"}, logical = Logical.OR)
+    @GetMapping("countCheck")
+    public CommonResult<Object> counCheck(HttpServletRequest request,InternshipApplicationVo vo){
+        //从session获取user
+        UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
+        try{
+            return internshipInfoByStudentService.countCheck(vo,userDto);
+        }catch (RuntimeException e){
+            return CommonResult.error(500,"实习岗位数量显示异常");
+        }
+
+    }
+
+    /**
+    *@author: GG
+    *@data: 2022/7/19 14:07
+    *@function:获取实习岗位已填报学生列表
+    */
+    @ApiOperation("获取实习岗位已填报学生列表")
+    @RequiresRoles(value = {"adviser","instructor"}, logical = Logical.OR)
+    @GetMapping("getInternshipApplyInfoFilled")
+    public CommonResult<Object> getInternshipApplyInfoFilled(HttpServletRequest request,InternshipApplicationVo vo){
+        //从session获取user
+        UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
+        //判断参数
+        if (vo == null){
+            return CommonResult.error(500,"缺少参数");
+        }
+        if (vo.getPage() == null){
+            return CommonResult.error(500,"缺少分页参数");
+        }
+        //判断参数
+        try{
+            return internshipInfoByStudentService.getInternshipApplyInfoFilled(vo,userDto);
+        }catch (RuntimeException e){
+            return CommonResult.error(500,"实习岗位数量显示异常");
+        }
+
+    }
+
+
+    /**
+    *@author: GG
+    *@data: 2022/7/19 14:08
+    *@function:获取实习岗位未填报学生列表
+    */
+    @ApiOperation("获取实习岗位未填报学生列表")
+    @RequiresRoles(value = {"adviser","instructor"}, logical = Logical.OR)
+    @GetMapping("getInternshipApplyInfoUnFill")
+    public CommonResult<Object> getInternshipApplyInfoUnFill(HttpServletRequest request,InternshipApplicationVo vo){
+        //从session获取user
+        UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
+        //判断参数
+        if (vo == null){
+            return CommonResult.error(500,"缺少参数");
+        }
+        if (vo.getPage() == null){
+            return CommonResult.error(500,"缺少分页参数");
+        }
+        try{
+            return internshipInfoByStudentService.getInternshipApplyInfoUnFill(vo,userDto);
+        }catch (RuntimeException e){
+            return CommonResult.error(500,"实习岗位数量显示异常");
+        }
     }
 
 }

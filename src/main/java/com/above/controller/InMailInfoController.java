@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
  * </p>
  *
  * @author mp
- * @since 2022-06-21
+ * @since 2022-07-13
  */
 @RestController
 @RequestMapping("/inMailInfo")

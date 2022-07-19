@@ -150,14 +150,6 @@ public class ClassInfoController {
         if (classVo == null){
             return CommonResult.error(500,"缺少参数");
         }
-        if(userDto.getUserType().equals(0)){
-            if(classVo.getSchoolId()==null){
-                return CommonResult.error(500,"缺少学校id");
-            }
-            if(classVo.getDepartmentId()==null){
-                return CommonResult.error(500,"缺少二级学院id");
-            }
-        }
 
         /*若page==0为不分页*/
         if (classVo.getPage()==0){

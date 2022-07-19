@@ -7,8 +7,6 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -21,7 +19,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author mp
- * @since 2022-06-22
+ * @since 2022-07-13
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -43,6 +41,10 @@ public class InternshipInfoByStudent implements Serializable {
     @TableField("relation_student_id")
     private Integer relationStudentId;
 
+    @ApiModelProperty(value = "审核状态 1-正常审核 2-岗位审核 3-企业审核(仅实习申请有)")
+    @TableField("check_status")
+    private Integer checkStatus;
+
     @ApiModelProperty(value = "申请类型 1-普通申请 2-免实习申请 3-就业上报 4-实习总评填写信息")
     @TableField("internship_type")
     private Integer internshipType;
@@ -50,10 +52,6 @@ public class InternshipInfoByStudent implements Serializable {
     @ApiModelProperty(value = "状态，0-草稿 1-审核中 2-审核失败 3-审核通过")
     @TableField("status")
     private Integer status;
-
-    @ApiModelProperty(value = "审核状态 1-第一次审核 2-岗位审核 3-企业审核")
-    @TableField("check_status")
-    private Integer checkStatus;
 
     @ApiModelProperty(value = "申请原因（仅免实习申请有）")
     @TableField("reason")
@@ -99,13 +97,9 @@ public class InternshipInfoByStudent implements Serializable {
     @TableField("company_industry")
     private Integer companyIndustry;
 
-    @ApiModelProperty(value = "企业所在区域字符串 1-未知分类")
+    @ApiModelProperty(value = "企业所在区域字符串")
     @TableField("company_area")
     private String companyArea;
-
-    @ApiModelProperty(value = "企业所在区域编码 1-未知分类")
-    @TableField("company_code")
-    private Integer companyCode;
 
     @ApiModelProperty(value = "公司地址")
     @TableField("company_address")
@@ -123,11 +117,6 @@ public class InternshipInfoByStudent implements Serializable {
     @TableField("job_content")
     private String jobContent;
 
-    @ApiModelProperty(value = "就业类别")
-    @TableField("job_category")
-    private Integer jobCategory;
-
-
     @ApiModelProperty(value = "企业老师")
     @TableField("company_teacher")
     private String companyTeacher;
@@ -144,13 +133,9 @@ public class InternshipInfoByStudent implements Serializable {
     @TableField("job_brief_info")
     private String jobBriefInfo;
 
-    @ApiModelProperty(value = "岗位所在区域字符串")
+    @ApiModelProperty(value = "岗位地址字符串")
     @TableField("job_area")
     private String jobArea;
-
-    @ApiModelProperty(value = "岗位所在区域编码")
-    @TableField("job_code")
-    private Integer jobCode;
 
     @ApiModelProperty(value = "岗位地址")
     @TableField("job_address")
@@ -158,12 +143,10 @@ public class InternshipInfoByStudent implements Serializable {
 
     @ApiModelProperty(value = "开始时间")
     @TableField("start_time")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date startTime;
 
     @ApiModelProperty(value = "结束时间")
     @TableField("end_time")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date endTime;
 
     @ApiModelProperty(value = "实习方式 1-顶岗实习 2-")
@@ -204,7 +187,6 @@ public class InternshipInfoByStudent implements Serializable {
 
     @ApiModelProperty(value = "创建时间")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date createTime;
 
     @ApiModelProperty(value = "更新人")
@@ -212,14 +194,56 @@ public class InternshipInfoByStudent implements Serializable {
     private Integer updateBy;
 
     @ApiModelProperty(value = "更新时间")
-    @TableField(value = "update_time",fill = FieldFill.UPDATE)
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    @TableField(value = "update_time", fill = FieldFill.UPDATE)
     private Date updateTime;
 
     @ApiModelProperty(value = "逻辑删除 0-未删除 1-已删除")
     @TableField(value = "deleted", fill = FieldFill.INSERT)
     private Integer deleted;
 
+    @ApiModelProperty(value = "就业类型 1-未知 2-（只有就业上报类型才有）")
+    @TableField("job_category")
+    private Integer jobCategory;
+
+    @ApiModelProperty(value = "公司所在区域")
+    @TableField("company_code")
+    private Integer companyCode;
+
+    @ApiModelProperty(value = "岗位所在区域")
+    @TableField("job_code")
+    private Integer jobCode;
+
+    @ApiModelProperty(value = "打卡次数（2/4）")
+    @TableField("sign_times")
+    private Integer signTimes;
+
+    @ApiModelProperty(value = "上午上班打卡时间（必填）")
+    @TableField("morning_sign_in_time")
+    private Date morningSignInTime;
+
+    @ApiModelProperty(value = "上午下班打卡时间")
+    @TableField("morning_sign_out_time")
+    private Date morningSignOutTime;
+
+    @ApiModelProperty(value = "下午上班打卡时间（必填）")
+    @TableField("afternoon_sign_in_time")
+    private Date afternoonSignInTime;
+
+    @ApiModelProperty(value = "下午下班打卡时间")
+    @TableField("afternoon_sign_out_time")
+    private Date afternoonSignOutTime;
+
+    @ApiModelProperty(value = "打卡星期（存数字list，例如周一为1）")
+    @TableField("sign_date")
+    private String signDate;
+
+    @ApiModelProperty(value = "经度")
+    @TableField("longitude")
+    private String longitude;
+
+    @ApiModelProperty(value = "纬度")
+    @TableField("latitude")
+    private String latitude;
 
 
 }

@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * <p>
- * 教职工信息表 服务类
+ * 教师信息表 服务类
  * </p>
  *
  * @author mp
@@ -19,13 +19,13 @@ import org.springframework.web.multipart.MultipartFile;
 public interface TeacherInfoService extends IService<TeacherInfo> {
 
     /**
-     * @Description: 添加教职工（生成用户信息）
+     * @Description: 添加教师（生成用户信息）
      * @Author: LZH
      * @Date: 2022/1/11 11:08
      */
     CommonResult<Object> insertTeacherInfo(UserDto userDto, TeacherVo teacherVo);
     /**
-     * @Description: 修改教职工信息
+     * @Description: 修改教师信息
      * @Author: LZH
      * @Date: 2022/1/11 11:11
      */
@@ -64,14 +64,14 @@ public interface TeacherInfoService extends IService<TeacherInfo> {
     TeacherInfo addNewTeacher(UserDto userDto, String teacherName, String workNumber);
 
     /**
-     * @Description: 根据学校id删除教职工
+     * @Description: 根据学校id删除教师
      * @Author: LZH
      * @Date: 2022/4/27 10:53
      */
     CommonResult<Object> deleteTeacherBySchoolId(UserDto userDto,TeacherVo teacherVo) throws RuntimeException;
 
     /**
-     * @Description: 根据学校id删除教职工
+     * @Description: 根据学校id删除教师
      * @Author: LZH
      * @Date: 2022/4/27 10:53
      */

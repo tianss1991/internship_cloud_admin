@@ -2,6 +2,7 @@ package com.above.service.impl;
 
 import com.above.dto.LeaveApplyInfoDto;
 import com.above.dto.UserDto;
+import com.above.exception.OptionDateBaseException;
 import com.above.po.*;
 import com.above.dao.LeaveApplyInfoMapper;
 import com.above.service.*;
@@ -9,6 +10,7 @@ import com.above.utils.CommonResult;
 import com.above.utils.DateUtil;
 import com.above.vo.BaseVo;
 import com.above.vo.LeaveApplyInfoVo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +19,9 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static com.above.utils.DateUtil.dateToStamp;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -40,6 +42,10 @@ public class LeaveApplyInfoServiceImpl extends ServiceImpl<LeaveApplyInfoMapper,
     private StudentInfoService studentInfoService;
     @Autowired
     private ClassTeacherRelationService classTeacherRelationService;
+    @Autowired
+    private SignInfoByStudentService signInfoByStudentService;
+
+
     /**
      * 提交请假申请
      * */
@@ -80,6 +86,9 @@ public class LeaveApplyInfoServiceImpl extends ServiceImpl<LeaveApplyInfoMapper,
         }
         //新建对象
         LeaveApplyInfo leaveApplyInfo = new LeaveApplyInfo();
+        leaveApplyInfo.setPlanId(userDto.getInternshipPlanInfo().getId());
+        leaveApplyInfo.setStudentId(userDto.getStudentInfo().getId());
+        leaveApplyInfo.setInternshipId(userDto.getInternshipInfo().getId());
         leaveApplyInfo.setStartTime(startTime);
         leaveApplyInfo.setEndTime(endTime);
         leaveApplyInfo.setDuration(duration);
@@ -242,8 +251,8 @@ public class LeaveApplyInfoServiceImpl extends ServiceImpl<LeaveApplyInfoMapper,
      * 教师审核请假申请
      * */
     @Override
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
-    public CommonResult<Object> checkLeaveApplyInfo(LeaveApplyInfoVo vo, UserDto userDto) {
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = OptionDateBaseException.class)
+    public CommonResult<Object> checkLeaveApplyInfo(LeaveApplyInfoVo vo, UserDto userDto) throws OptionDateBaseException {
         Integer updateBy = userDto.getId();
         //审核状态，0为失败，1为通过
         Integer checkStatus = vo.getCheckStatus();
@@ -270,6 +279,41 @@ public class LeaveApplyInfoServiceImpl extends ServiceImpl<LeaveApplyInfoMapper,
                 }else if(checkStatus.equals(1)){
                     //审核通过
                     leaveApplyInfo.setStatus(3);
+                    SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                    //请假成功后把期间内所有的签到记录改为免签
+                    LambdaQueryWrapper<SignInfoByStudent> signInfoByStudentLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                    signInfoByStudentLambdaQueryWrapper.eq(SignInfoByStudent::getStudentId,leaveApplyInfo.getStudentId())
+                            .eq(SignInfoByStudent::getInternshipPlanId,leaveApplyInfo.getPlanId())
+                            .between(SignInfoByStudent::getSignDate,format.format(startTime),format.format(endTime));
+                    List<SignInfoByStudent> list = signInfoByStudentService.list(signInfoByStudentLambdaQueryWrapper);
+
+                    //判断如果大于0则修改
+                    if (list.size() > 0){
+                        //遍历修改需要审核的
+                        list.forEach(info -> {
+                            Date todaynoon = DateUtil.getTodaynoon(info.getSignDate());
+                            /*早上判断开始时间是否12点前 ，若在12点前则早上无需打卡
+                              下午则判断结束时间是否在12点后，若在12点后则早上无需打卡*/
+                            if (info.getIsMorning().equals(1)){
+                                if (startTime.before(todaynoon)){
+                                    info.setSignStatus(3);
+                                }
+                            }
+                            if (info.getIsMorning().equals(2)){
+                                if (endTime.after(todaynoon)){
+                                    info.setSignStatus(3);
+                                }
+                            }
+                        });
+                        List<SignInfoByStudent> collect = list.stream().filter(info -> info.getSignStatus().equals(3)).collect(Collectors.toList());
+                        if (collect.size() > 0){
+                            boolean b = signInfoByStudentService.updateBatchById(collect);
+                            if (!b){
+                                return CommonResult.error(500,"请假申请审核失败");
+                            }
+                        }
+                    }
+
 
                 }
                 leaveApplyInfo.setUpdateBy(updateBy);
@@ -279,8 +323,9 @@ public class LeaveApplyInfoServiceImpl extends ServiceImpl<LeaveApplyInfoMapper,
         }
         boolean save = this.updateById(leaveApplyInfo);
         if(!save){
-            throw new RuntimeException("请假申请审核失败");
+            throw new OptionDateBaseException("请假申请审核失败");
         }
+
         return CommonResult.success("请假申请审核成功");
     }
 

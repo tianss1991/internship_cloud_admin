@@ -3,9 +3,11 @@ package com.above.service.impl;
 import cn.hutool.core.util.NumberUtil;
 import com.above.config.sms.SmsConfig;
 import com.above.constans.exception.RedisException;
+import com.above.dao.InternshipPlanInfoMapper;
 import com.above.dao.StudentInfoMapper;
 import com.above.dao.TeacherInfoMapper;
 import com.above.dao.UserMapper;
+import com.above.dto.SimplePlanInfoDto;
 import com.above.dto.UserDto;
 import com.above.dto.UserRoleDto;
 import com.above.po.*;
@@ -13,6 +15,7 @@ import com.above.service.*;
 import com.above.utils.CommonResult;
 import com.above.utils.MyStringUtils;
 import com.above.utils.PasswordCryptoTool;
+import com.above.utils.RedisUtils;
 import com.above.vo.BaseVo;
 import com.above.vo.user.UpdateUserVo;
 import com.above.vo.user.UserVo;
@@ -45,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.*;
 
 /**
@@ -87,6 +91,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private InternshipInfoByStudentService infoByStudentService;
     @Autowired
     private InternshipPlanInfoService planInfoService;
+    @Autowired
+    private InternshipPlanInfoMapper internshipPlanInfoMapper;
 
     /**
      * @Decription: 获取验证码
@@ -117,7 +123,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         map.put("code", phoneCode);
         map.put("time", System.currentTimeMillis());
         Session session = SecurityUtils.getSubject().getSession();
-        session.setAttribute(SmsConfig.REDIS_CODE + userVo.getTelephone(), map);
+        session.setAttribute(SmsConfig.REDIS_CODE + userVo.getTelephone(), JSON.toJSONString(map));
+
+        RedisUtils.set(SmsConfig.REDIS_CODE + userVo.getTelephone(),phoneCode,300);
 
         log.info(session.getAttribute(SmsConfig.REDIS_CODE + userVo.getTelephone()).toString());
         log.info("sessionid"+session.getId());
@@ -216,41 +224,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
 
         if (userDto.getUserType().equals(UserDto.STUDENT)){
-            if (userDto.getSchoolInfo() != null){
+            if (userDto.getSchoolInfo() == null){
                 SchoolInfo schoolInfo = schoolInfoService.getById(userDto.getStudentInfo().getSchoolId());
                 userDto.setSchoolInfo(schoolInfo);
             }
 
-            if (userDto.getInternshipPlanInfo() != null){
+            if (userDto.getInternshipPlanInfo() == null){
                 StudentInfo studentInfo = userDto.getStudentInfo();
                 Date now = new Date();
                 /*学生获取当前实习信息*/
-                LambdaQueryWrapper<InternshipPlanInfo> planInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                planInfoLambdaQueryWrapper.eq(InternshipPlanInfo::getDepartmentId,studentInfo.getDepartmentId())
-                        .eq(InternshipPlanInfo::getMajorId,studentInfo.getMajorId())
-                        .eq(InternshipPlanInfo::getGradeId,studentInfo.getGradeId())
-                        .le(InternshipPlanInfo::getStartTime,now).eq(InternshipPlanInfo::getEndTime,now);
-                InternshipPlanInfo planInfo = planInfoService.getOne(planInfoLambdaQueryWrapper);
-                userDto.setInternshipPlanInfo(planInfo);
+//                LambdaQueryWrapper<InternshipPlanInfo> planInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//                planInfoLambdaQueryWrapper.eq(InternshipPlanInfo::getDepartmentId,studentInfo.getDepartmentId())
+//                        .eq(InternshipPlanInfo::getMajorId,studentInfo.getMajorId())
+//                        .eq(InternshipPlanInfo::getGradeId,studentInfo.getGradeId())
+//                        .le(InternshipPlanInfo::getStartTime,now).ge(InternshipPlanInfo::getEndTime,now);
+//                InternshipPlanInfo planInfo = planInfoService.getOne(planInfoLambdaQueryWrapper);
 
-                if (planInfo != null){
-                    //查找当前学生已通过的实习信息
-                    LambdaQueryWrapper<InternshipInfoByStudent> internshipInfoByStudentLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                    internshipInfoByStudentLambdaQueryWrapper.eq(InternshipInfoByStudent::getRelationStudentId,userDto.getStudentInfo().getId())
-                            .eq(InternshipInfoByStudent::getRelationPlanId,planInfo.getId())
-                            .in(InternshipInfoByStudent::getInternshipType,1,2)
-                            .eq(InternshipInfoByStudent::getStatus,3)
-                            .eq(InternshipInfoByStudent::getDeleted,BaseVo.UNDELETE);
-                    List<InternshipInfoByStudent> list = infoByStudentService.list(internshipInfoByStudentLambdaQueryWrapper);
+                BaseVo baseVo = new BaseVo();
+                baseVo.setStudentId(studentInfo.getId());
+                baseVo.setStartTime(now);
+
+                SimplePlanInfoDto planInfoByStudent = internshipPlanInfoMapper.getPlanInfoByStudent(baseVo);
+                userDto.setInternshipPlanInfo(planInfoByStudent);
+            }
+            if (userDto.getInternshipPlanInfo() != null){
+
+                //查找当前学生已通过的实习信息
+                LambdaQueryWrapper<InternshipInfoByStudent> internshipInfoByStudentLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                internshipInfoByStudentLambdaQueryWrapper.eq(InternshipInfoByStudent::getRelationStudentId,userDto.getStudentInfo().getId())
+                        .eq(InternshipInfoByStudent::getRelationPlanId,userDto.getInternshipPlanInfo().getId())
+                        .in(InternshipInfoByStudent::getInternshipType,1,2)
+                        .eq(InternshipInfoByStudent::getStatus,3)
+                        .eq(InternshipInfoByStudent::getDeleted,BaseVo.UNDELETE);
+                List<InternshipInfoByStudent> list = infoByStudentService.list(internshipInfoByStudentLambdaQueryWrapper);
+                if (list.size() > 0){
                     userDto.setInternshipInfo(list.get(0));
                 }
             }
-
-
         }
 
         if (userDto.getUserType().equals(UserDto.TEACHER)){
-            if (userDto.getSchoolInfo() != null){
+            if (userDto.getSchoolInfo() == null){
                 SchoolInfo schoolInfo = schoolInfoService.getById(userDto.getTeacherInfo().getSchoolId());
                 userDto.setSchoolInfo(schoolInfo);
             }
@@ -623,7 +637,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //判断如果是修改老师的密码，只有管理员才有权限
         if (user.getUserType().equals(UserVo.TEACHER)) {
             if (!operator.getUserType().equals(UserVo.ADMIN)){
-                return CommonResult.error(500,"教职工只有超级管理员才能重置");
+                return CommonResult.error(500,"教师只有超级管理员才能重置");
             }
         }
 

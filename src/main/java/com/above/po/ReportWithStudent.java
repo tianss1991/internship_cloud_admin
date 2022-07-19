@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -43,8 +44,12 @@ public class ReportWithStudent implements Serializable {
     @TableField("internship_id")
     private Integer internshipId;
 
-    @ApiModelProperty(value = "日报状态 0-待提交 1-未阅 2-驳回 3-已批阅")
-    @TableField("status")
+    @ApiModelProperty(value = "关联实习计划id")
+    @TableField("relation_plan_id")
+    private Integer relationPlanId;
+
+    @ApiModelProperty(value = "日报状态 0-待提交 1-未阅 2-驳回 3-已批阅 4-已阅")
+    @TableField("`status`")
     private Integer status;
 
     @ApiModelProperty(value = "报告类型 1-日报 2-周报 3-月报 4-实习总结")
@@ -52,11 +57,11 @@ public class ReportWithStudent implements Serializable {
     private Integer reportType;
 
     @ApiModelProperty(value = "周次（只有周报有）")
-    @TableField("week")
+    @TableField("`week`")
     private String week;
 
     @ApiModelProperty(value = "月份（只有月报有）")
-    @TableField("month")
+    @TableField("`month`")
     private String month;
 
     @DateTimeFormat(pattern = "yyy-MM-dd HH:mm")
@@ -65,6 +70,7 @@ public class ReportWithStudent implements Serializable {
     private Date startTime;
 
     @DateTimeFormat(pattern = "yyy-MM-dd HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     @ApiModelProperty(value = "结束时间（只有周报有）")
     @TableField("end_time")
     private Date endTime;
@@ -89,13 +95,17 @@ public class ReportWithStudent implements Serializable {
     @TableField("score")
     private Integer score;
 
-    @ApiModelProperty(value = "驳回理由")
+    @ApiModelProperty(value = "驳回理由/评价内容")
     @TableField("reason")
     private String reason;
 
-    @ApiModelProperty(value = "评价内容")
-    @TableField("evaluation")
-    private String evaluation;
+    @ApiModelProperty(value = "浏览状态 0-无效浏览 1-有效浏览")
+    @TableField("glance_over")
+    private Integer glanceOver;
+
+    @ApiModelProperty(value = "日报完成状态 1-未写 2-已写")
+    @TableField("`write`")
+    private Integer write;
 
     @ApiModelProperty(value = "创建人")
     @TableField("create_by")
@@ -118,6 +128,5 @@ public class ReportWithStudent implements Serializable {
     @ApiModelProperty(value = "逻辑删除 0-未删除 1-已删除")
     @TableField(value = "deleted", fill = FieldFill.INSERT)
     private Integer deleted;
-
 
 }

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Repository;
 
 /**
  * <p>
- * 教职工信息表 Mapper 接口
+ * 教师信息表 Mapper 接口
  * </p>
  *
  * @author mp

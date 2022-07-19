@@ -68,24 +68,24 @@ public class Codegenerator {
         pc.setXml("mapper");
         mpg.setPackageInfo(pc);
 //第一次生成不需要开以下代码，后续生成需要再次使用到以下代码
-//        TemplateConfig tc = new TemplateConfig();
-//
-//        tc.setController(null);
-//
-//        tc.setService(null);
-//
-//        tc.setServiceImpl(null);
-//
-//        tc.setMapper(null);
-//
-//        tc.setXml(null);
-//
-//        mpg.setTemplate(tc);
+        TemplateConfig tc = new TemplateConfig();
+
+        tc.setController(null);
+
+        tc.setService(null);
+
+        tc.setServiceImpl(null);
+
+        tc.setMapper(null);
+
+        tc.setXml(null);
+
+        mpg.setTemplate(tc);
 
         //4、策略配置
         StrategyConfig sc = new StrategyConfig();
         //设置映射的表名,多张表用逗号“，”隔开
-        sc.setInclude("area");
+        sc.setInclude("internship_plan_info");
         //表名转驼峰
         sc.setNaming(NamingStrategy.underline_to_camel);
         //字段名转驼峰

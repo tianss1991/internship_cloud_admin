@@ -52,24 +52,24 @@ public class DateUtil {
 
 
     /**
-     * @Description: 获取次日6点
+     * @Description: 获取次日
      * @Author: LZH
      * @Date: 2022/2/15 13:58
      */
-    public static Date getNextDaySixHour(Date now){
+    public static Date getNextDay(Date now){
         Calendar time = Calendar.getInstance();
 
         time.setTime(now);
 
         time.add(Calendar.DATE, 1);
 
-        time.set(Calendar.HOUR_OF_DAY, 6);
+        time.set(Calendar.HOUR_OF_DAY, 0);
 
         time.set(Calendar.MINUTE, 0);
 
         time.set(Calendar.SECOND, 0);
 
-        time.set(Calendar.MILLISECOND, 999);
+        time.set(Calendar.MILLISECOND, 0);
 
         return time.getTime();
     }
@@ -105,6 +105,20 @@ public class DateUtil {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(today);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        return calendar.getTime();
+    }
+
+    /**
+     * @Description: 获取当天12点
+     * @Author: LZH
+     * @Date: 2022/2/19 10:20
+     */
+    public static Date getTodaynoon(Date today){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(today);
+        calendar.set(Calendar.HOUR_OF_DAY, 12);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         return calendar.getTime();
@@ -170,6 +184,18 @@ public class DateUtil {
         return calendar.getTime();
     }
 
+    /**
+     * @Description: 获取今天是星期几 星期一为 1 以此类推
+     * @Author: LZH
+     * @Date: 2022/4/15 14:12
+     */
+    public static int getWeek(Date today){
+        Calendar calendar = Calendar.getInstance();
+
+        calendar.setTime(today);
+
+        return calendar.get(Calendar.DAY_OF_WEEK)-1;
+    }
     /**
     *@author: GG
     *@data: 2022/7/7 11:34

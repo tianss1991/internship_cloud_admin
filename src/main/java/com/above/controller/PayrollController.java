@@ -56,13 +56,10 @@ public class PayrollController {
             return CommonResult.error(500, "实习岗位不能为空");
         }
         if (vo.getSalary() == null) {
-            return CommonResult.error(500, "实习工资不能为空");
+            return CommonResult.error(500, "请输入实习工资");
         }
         if (vo.getDateTime() == null) {
             return CommonResult.error(500, "请选择时间");
-        }
-        if (StringUtils.isEmpty(vo.getImgUrl())) {
-            return CommonResult.error(500, "图片不能为空");
         }
 
         try {
@@ -120,25 +117,20 @@ public class PayrollController {
 
     }
 
-
     /**
      * @Description: 查询工资单详情
      * @Author: YJH
      * @Date: 2022/7/6 14:20
      */
     @ApiOperation("查询工资单详情")
-    @RequiresRoles(value = {"student", "adviser"}, logical = Logical.OR)
-    @GetMapping("getPayroll")
-    public CommonResult<Object> getPayrollDeta(HttpServletRequest request,PayrollVo vo) {
+    @RequiresRoles(value = {"student", "instructor"}, logical = Logical.OR)
+    @GetMapping("getPayrollDetail")
+    public CommonResult<Object> getPayrollDetail(HttpServletRequest request,PayrollVo vo) {
         //从session获取user
         UserDto userDto = (UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
-        Integer studentId = vo.getStudentId();
-        if (studentId == null || studentId ==0) {
-            return CommonResult.error(500, "缺少学生id");
-        }
 
         try {
-            return payrollService.getPayrollDeta(userDto, vo);
+            return payrollService.getPayrollDetail(userDto, vo);
         } catch (RuntimeException e) {
             return CommonResult.error(500, e.getMessage());
         }

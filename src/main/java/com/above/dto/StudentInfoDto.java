@@ -15,7 +15,7 @@ public class StudentInfoDto extends StudentInfo {
 
     private String schoolName;
 
-    private String gradeName;
+    private String gradeYear;
 
     private String departmentName;
 

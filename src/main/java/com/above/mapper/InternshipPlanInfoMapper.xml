@@ -2,4 +2,276 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.above.dao.InternshipPlanInfoMapper">
 
+    <select id="getInternshipInfoList" resultType="com.above.dto.InternshipPlanInfoDto">
+        SELECT
+	ipi.id as id,
+	ipi.plan_title as planTitle,
+	mi.major_name as majorName,
+	gi.grade_year as gradeYear,
+	ipi.gradation as gradation,
+	ipi.start_time as startTime,
+	ipi.end_time as endTime,
+	ipi.`status` as status
+FROM
+	internship_plan_info ipi
+	LEFT JOIN major_info mi ON ipi.major_id = mi.id
+	AND mi.deleted = 0
+	LEFT JOIN grade_info gi ON gi.id = ipi.grade_id
+	AND gi.deleted = 0
+WHERE
+	ipi.deleted = 0
+	<if test="schoolId != null">
+        AND ipi.school_id = #{schoolId}
+    </if>
+    <if test="departmentId != null">
+        AND ipi.department_id = #{departmentId}
+    </if>
+    <if test="majorId != null">
+		AND ipi.major_id = #{majorId}
+	</if>
+	<if test="gradeId != null">
+		AND ipi.grade_id = #{gradeId}
+	</if>
+	<if test="key != null">
+		AND ipi.plan_title like concat('%',#{key},'%')
+	</if>
+	<if test="status != null">
+		AND ipi.status = #{status}
+	</if>
+		order by ipi.create_time
+		LIMIT #{start},#{size}
+    </select>
+	<select id="getAllotInternshipPlanInfoList" resultType="com.above.dto.InternshipPlanInfoDto">
+		SELECT
+	a.id as id,
+	a.plan_title as planTitle,
+	a.grade_id as gradeId,
+	a.grade_year as gradeYear,
+	a.major_id as majorId,
+	a.major_name as majorName,
+	a.start_time as startTime,
+	a.end_time as endTime,
+	a.department_id as departmentId,
+	a.school_id as schoolId,
+	GROUP_CONCAT( teacher_name SEPARATOR ',' ) AS teacherNames
+FROM
+	(
+	SELECT
+		ipi.id,
+		ipi.plan_title,
+		ipi.grade_id,
+		gi.grade_year,
+		ipi.major_id,
+		mi.major_name,
+		ipi.start_time,
+		ipi.end_time,
+		iwt.teacher_id,
+		ti.teacher_name,
+		ipi.create_time,
+		ipi.school_id,
+		ipi.department_id
+	FROM
+		internship_plan_info ipi
+		LEFT JOIN internship_with_teacher iwt ON iwt.relation_plan_id = ipi.id
+		AND iwt.deleted = 0
+		LEFT JOIN major_info mi ON mi.id = ipi.major_id
+		AND mi.deleted = 0
+		LEFT JOIN grade_info gi ON gi.id = ipi.grade_id
+		AND gi.deleted = 0
+		LEFT JOIN teacher_info ti ON ti.id = iwt.teacher_id
+		AND ti.deleted = 0
+		where ipi.deleted = 0
+	) a
+<where>
+		<if test="schoolId != null">
+			AND a.school_id = #{schoolId}
+		</if>
+		<if test="departmentId != null">
+			AND a.department_id = #{departmentId}
+		</if>
+		<if test="majorId != null">
+			AND a.major_id = #{majorId}
+		</if>
+		<if test="gradeId != null">
+			AND a.grade_id = #{gradeId}
+		</if>
+		<if test="key != null">
+			AND a.plan_title like concat('%',#{key},'%')
+		</if>
+	<if test="status == 0">
+		AND ( SELECT count(*) FROM internship_with_teacher WHERE relation_plan_id = a.id and internship_with_teacher.deleted=0 ) = 0
+	</if>
+	<if test="status == 1">
+		AND ( SELECT count(*) FROM internship_with_teacher WHERE relation_plan_id = a.id and internship_with_teacher.deleted=0 ) > 0
+	</if>
+</where>
+GROUP BY
+	id
+order by a.create_time
+LIMIT #{start},#{size}
+	</select>
+	<select id="getInternshipInfoById" resultType="com.above.dto.InternshipPlanInfoDto">
+		SELECT
+		ipi.id AS id,
+		ipi.plan_title AS planTitle,
+		si.school_name AS schoolName,
+		di.department_name AS departmentName,
+		gi.grade_year AS gradeYear,
+		mi.major_name AS majorName,
+		ipi.major_id as majorId,
+		ipi.school_id as schoolId,
+		ipi.department_id as departmentId,
+		ipi.grade_id as gradeId,
+		ipi.gradation AS gradation,
+		ipi.start_time AS startTime,
+		ipi.end_time AS endTime,
+		ipi.purpose AS purpose,
+		ipi.required AS required,
+		ipi.content AS content,
+		ipi.sign_set AS signSet,
+		ipi.sign_times AS signTimes,
+		ipi.daily_count AS dailyCount,
+		ipi.daily_word_count AS dailyWordCount,
+		ipi.week_count AS weekCount,
+		ipi.week_word_count AS weekWordCount,
+		ipi.month_count AS monthCount,
+		ipi.month_word_count AS monthWordCount,
+		ipi.summarize_count AS summarizeCount,
+		ipi.summarize_word_count AS summarizeWordCount,
+		ipi.`status` AS status
+		FROM
+		internship_plan_info ipi
+		LEFT JOIN major_info mi ON ipi.major_id = mi.id
+		AND mi.deleted = 0
+		LEFT JOIN grade_info gi ON gi.id = ipi.grade_id
+		AND gi.deleted = 0
+		LEFT JOIN school_info si ON si.id = ipi.school_id 	AND si.deleted = 0
+		LEFT JOIN department_info di ON di.id = ipi.department_id  	AND di.deleted = 0
+		WHERE
+		ipi.deleted = 0
+		<if test="planId != null">
+			AND ipi.id = #{planId}
+		</if>
+	</select>
+	<select id="getAllotInternshipPlanInfoListCount" resultType="java.lang.Integer">
+		SELECT
+		count(*)
+		FROM
+		(
+		SELECT
+		ipi.id,
+		ipi.plan_title,
+		ipi.grade_id,
+		ipi.major_id,
+		iwt.teacher_id,
+		ipi.school_id,
+		ipi.department_id
+		FROM
+		internship_plan_info ipi
+		LEFT JOIN internship_with_teacher iwt ON iwt.relation_plan_id = ipi.id
+		AND iwt.deleted = 0
+		LEFT JOIN major_info mi ON mi.id = ipi.major_id
+		AND mi.deleted = 0
+		LEFT JOIN grade_info gi ON gi.id = ipi.grade_id
+		AND gi.deleted = 0
+		LEFT JOIN teacher_info ti ON ti.id = iwt.teacher_id
+		AND ti.deleted = 0
+		where ipi.deleted = 0
+		GROUP BY
+		ipi.id
+		) a
+		<where>
+			<if test="schoolId != null">
+				AND a.school_id = #{schoolId}
+			</if>
+			<if test="departmentId != null">
+				AND a.department_id = #{departmentId}
+			</if>
+			<if test="majorId != null">
+				AND a.major_id = #{majorId}
+			</if>
+			<if test="gradeId != null">
+				AND a.grade_id = #{gradeId}
+			</if>
+			<if test="key != null">
+				AND a.plan_title like concat('%',#{key},'%')
+			</if>
+			<if test="status == 0">
+				AND ( SELECT count(*) FROM internship_with_teacher WHERE relation_plan_id = a.id and internship_with_teacher.deleted=0 ) = 0
+			</if>
+			<if test="status == 1">
+				AND ( SELECT count(*) FROM internship_with_teacher WHERE relation_plan_id = a.id and internship_with_teacher.deleted=0 ) > 0
+			</if>
+		</where>
+	</select>
+	<select id="getInternshipInfoListCount" resultType="java.lang.Integer">
+		SELECT
+		count(*)
+		FROM
+		internship_plan_info ipi
+		LEFT JOIN major_info mi ON ipi.major_id = mi.id
+		AND mi.deleted = 0
+		LEFT JOIN grade_info gi ON gi.id = ipi.grade_id
+		AND gi.deleted = 0
+		WHERE
+		ipi.deleted = 0
+		<if test="schoolId != null">
+			AND ipi.school_id = #{schoolId}
+		</if>
+		<if test="departmentId != null">
+			AND ipi.department_id = #{departmentId}
+		</if>
+		<if test="majorId != null">
+			AND ipi.major_id = #{majorId}
+		</if>
+		<if test="gradeId != null">
+			AND ipi.grade_id = #{gradeId}
+		</if>
+		<if test="key != null">
+			AND ipi.plan_title like concat('%',#{key},'%')
+		</if>
+		<if test="status != null">
+			AND ipi.status = #{status}
+		</if>
+	</select>
+	<select id="getAllotInternshipPlanTeacherAndStudentInfoList"
+			resultType="com.above.dto.AllotInternshipPlanInfoDto">
+SELECT
+	iwt.teacher_id AS teacherId,
+	IFNULL(GROUP_CONCAT( iws.relation_student_id SEPARATOR ',' ) , '') AS studentIds,
+	ti.teacher_name AS teacherName,
+	IFNULL(GROUP_CONCAT( si.student_name SEPARATOR ',' ),'') AS studentNames
+FROM
+	internship_with_teacher iwt
+	LEFT JOIN internship_with_student iws ON iwt.relation_plan_id = iws.relation_plan_id
+	AND iwt.teacher_id = iws.relation_teacher_id
+	AND iws.deleted = 0
+	LEFT JOIN teacher_info ti ON ti.id = iwt.teacher_id
+	AND ti.deleted = 0
+	LEFT JOIN student_info si ON si.id = iws.relation_student_id
+	AND si.deleted = 0
+WHERE
+	iwt.deleted = 0
+	<if test="planId != null">
+		AND iwt.relation_plan_id = #{planId}
+	</if>
+GROUP BY
+	iwt.teacher_id
+	</select>
+	<select id="getPlanInfoByStudent" resultType="com.above.dto.SimplePlanInfoDto">
+		select
+			ipi.id as id,
+		    ipi.plan_title as planTitle,
+			iws.relation_teacher_id as teacherId,
+		    ti.teacher_name as teacherName
+		from
+		     internship_with_student iws
+				 LEFT JOIN internship_plan_info ipi on iws.relation_plan_id = ipi.id
+			 LEFT JOIN teacher_info ti ON ti.id = iws.relation_teacher_id
+				 AND ti.deleted = 0
+		where
+		      iws.relation_student_id = #{studentId}
+			AND ipi.start_time &lt;= #{startTime}
+			and ipi.end_time &gt;= #{startTime}
+	</select>
 </mapper>

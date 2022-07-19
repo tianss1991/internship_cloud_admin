@@ -30,6 +30,10 @@ public class SignInfoByStudent implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
+    public static final Integer NORMAL = 1;
+    public static final Integer EXCEPTION = 2;
+    public static final Integer NO_SIGN = 3;
+
     @ApiModelProperty(value = "编号")
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
@@ -38,9 +42,17 @@ public class SignInfoByStudent implements Serializable {
     @TableField("student_id")
     private Integer studentId;
 
+    @ApiModelProperty(value = "关联实习计划id")
+    @TableField("internship_plan_id")
+    private Integer internshipPlanId;
+
     @ApiModelProperty(value = "关联实习信息id")
     @TableField("internship_id")
     private Integer internshipId;
+
+    @ApiModelProperty(value = "预计打卡时间")
+    @TableField("predict_sign_time")
+    private Date predictSignTime;
 
     @ApiModelProperty(value = "打卡时间 （yyyy-MM-dd HH:mm:ss）")
     @TableField("sign_time")
@@ -58,7 +70,7 @@ public class SignInfoByStudent implements Serializable {
     @TableField("is_morning")
     private Integer isMorning;
 
-    @ApiModelProperty(value = "打卡状态 1-正常 2-异常（已打卡状态，迟到早退） 3-驳回(申请补卡后被驳回为此状态) 4-补卡 5-缺卡 6-免签 7-请假")
+    @ApiModelProperty(value = "打卡状态 1-正常 2-异常 3-免签")
     @TableField("sign_status")
     private Integer signStatus;
 
@@ -98,5 +110,11 @@ public class SignInfoByStudent implements Serializable {
     @TableField(value = "deleted", fill = FieldFill.INSERT)
     private Integer deleted;
 
+    @ApiModelProperty(value = "经度")
+    @TableField("longitude")
+    private String longitude;
 
+    @ApiModelProperty(value = "纬度")
+    @TableField("latitude")
+    private String latitude;
 }

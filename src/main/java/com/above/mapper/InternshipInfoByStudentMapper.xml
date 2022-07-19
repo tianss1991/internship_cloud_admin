@@ -3,10 +3,12 @@
 <mapper namespace="com.above.dao.InternshipInfoByStudentMapper">
     <select id="internshipInfoCheckList" resultType="com.above.dto.InternshipCheckDto">
     SELECT
-    	iibsl.id as id,
+    	iibs.id as id,
+		iibs.internship_type as type,
 	    s.student_name as studentName,
 	    iibsl.`status` as status,
 	    ipi.plan_title as planTitle,
+	    iibs.reason as reason,
 		<if test="internshipType == 1">
 			iibs.company_name as companyName,
 			iibs.job_department as jobDepartment,
@@ -27,6 +29,7 @@
 	LEFT JOIN student_info s on s.id=iibs.relation_student_id and s.deleted=0
 	LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
 	LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+	LEFT JOIN major_info mi ON mi.id = ipi.major_id AND mi.deleted = 0
 		<where>
 			iibsl.deleted=0
 			<if test="planId != null">
@@ -62,6 +65,9 @@
 			</if>
 			<if test="teacherId != null">
 				and t.id = #{teacherId}
+			</if>
+			<if test="majorId != null">
+				and  mi.id = #{majorId}
 			</if>
 		</where>
 		order by iibsl.create_time desc
@@ -157,6 +163,8 @@
 	</select>
 	<select id="internshipInfoUnCheckList" resultType="com.above.dto.InternshipCheckDto">
 	SELECT
+		iibs.id as id,
+		iibs.internship_type as type,
 		s.student_name as studentName,
 		ipi.plan_title as planTitle,
 		<if test="internshipType == 1">
@@ -168,6 +176,7 @@
 			iibs.reason as reason,
 		</if>
 		<if test="internshipType == 3">
+			iibs.company_name as companyName,
 			iibs.job_name as jobName,
 			iibs.job_category as jobCategory,
 		</if>
@@ -180,6 +189,7 @@
 		LEFT JOIN student_info s on s.user_id = iibs.create_by and s.deleted = 0
 		LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
 		LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+		LEFT JOIN major_info mi ON mi.id = ipi.major_id AND mi.deleted = 0
 		<where>
 			iibs.deleted =0
 			<if test="planId != null">
@@ -207,6 +217,229 @@
 			<if test="teacherId != null">
 				and t.id = #{teacherId}
 			</if>
+			<if test="majorId != null">
+				and  mi.id = #{majorId}
+			</if>
 		</where>
+	</select>
+	<select id="displaySingleInternshipApplyInfo" resultType="com.above.dto.InternshipApplyInfoDto">
+	SELECT
+	iibs.id as id,
+	iibs.agreement_code as internshipType,
+	iibs.approach as approach,
+	iibs.internship_type as internshipType,
+	iibs.status as status,
+	iibs.reason as reason,
+	iibs.dispositon as dispositon,
+	iibs.company_name as companyName,
+	iibs.social_code as socialCode,
+	iibs.principal as principal,
+	iibs.company_scale as companyScale,
+	iibs.company_telephone as companyTelephone,
+	iibs.company_mail as companyMail,
+	iibs.company_post as companyPost,
+	iibs.company_nature as companyNature,
+	iibs.company_industry as companyIndustry,
+	iibs.company_area as companyArea,
+	iibs.company_address as companyAddress,
+	iibs.company_code as companyCode,
+	iibs.job_name as jobName,
+	iibs.job_department as jobDepartment,
+	iibs.job_content as jobContent,
+	iibs.company_teacher as companyTeacher ,
+	iibs.company_teacher_telephone as companyTeacherTelephone,
+	iibs.job_category as jobCategory,
+	iibs.job_type as jobType,
+	iibs.job_brief_info as jobBriefInfo,
+	iibs.job_area as jobArea,
+	iibs.job_code as jobCode,
+	iibs.job_address as jobAddress,
+	iibs.start_time as startTime,
+	iibs.end_time as endTime,
+	iibs.approach as approach,
+	iibs.is_aboral as isAboral,
+	iibs.salary as salary,
+	iibs.is_special as isSpecial,
+	iibs.extra as extra,
+	iibs.file_url as fileUrl,
+	<if test="teacherId != null">
+		si.student_name as name,
+		uu.user_avatar as userAvatar,
+	</if>
+	<if test="studentId != null">
+		ti.teacher_name as name,
+		u.user_avatar as userAvatar,
+	</if>
+	<if test="status != null">
+		<if test="status == 0 || status == 1">
+			iibs.create_time as time,
+		</if>
+		<if test="status == 2 || status == 3">
+			iibs.update_time as time,
+		</if>
+	</if>
+	iibs.agreement_code as agreementCode,
+	iibs.fail_reason as failReason,
+	iibs.deleted as deleted
+FROM
+	internship_info_by_student iibs
+	LEFT JOIN teacher_info ti ON iibs.update_by = ti.user_id and ti.deleted=0
+	LEFT JOIN student_info si ON iibs.create_by = si.user_id and si.deleted=0
+	LEFT JOIN `user` u ON u.id = ti.user_id and u.deleted=0
+	LEFT JOIN `user` uu ON uu.id = si.user_id and uu.deleted=0
+	<where>
+	iibs.deleted = 0
+		<if test="internshipId != null">
+			AND iibs.id = #{internshipId}
+		</if>
+	</where>
+	</select>
+    <select id="getInternshipApplyInfoFilled" resultType="com.above.dto.InternshipInfoFillDto">
+SELECT
+	u.user_avatar as userAvatar,
+	iibs.relation_student_id as id,
+	u.user_name as studentName,
+	uc.account_number as studentNumber,
+	iibs.company_name as companyName,
+	iibs.job_name as jobName
+FROM
+	internship_info_by_student iibs
+	left join `user`  u on iibs.create_by = u.id and u.deleted = 0
+	left join user_account uc on iibs.create_by = uc.user_id and uc.deleted = 0
+WHERE
+	iibs.deleted = 0
+	<if test="planId != null">
+		AND iibs.relation_plan_id = #{planId}
+	</if>
+	AND iibs.internship_type = 1
+	and iibs.relation_student_id in(SELECT
+	iws.relation_student_id
+FROM
+	internship_with_student iws
+WHERE
+	iws.deleted = 0
+		<if test="planId != null">
+			AND iibs.relation_plan_id = #{planId}
+		</if>
+		<if test="teacherId != null">
+			AND iws.relation_teacher_id = #{teacherId}
+		</if>
+)
+		limit #{start},#{size}
+	</select>
+	<select id="getInternshipApplyInfoFilledCount" resultType="java.lang.Integer">
+		SELECT
+		count(*)
+		FROM
+		internship_info_by_student iibs
+		left join `user`  u on iibs.create_by = u.id and u.deleted = 0
+		left join user_account uc on iibs.create_by = uc.user_id and uc.deleted = 0
+		WHERE
+		iibs.deleted = 0
+		<if test="planId != null">
+			AND iibs.relation_plan_id = #{planId}
+		</if>
+		AND iibs.internship_type = 1
+		and iibs.relation_student_id in(SELECT
+		iws.relation_student_id
+		FROM
+		internship_with_student iws
+		WHERE
+		iws.deleted = 0
+		<if test="planId != null">
+			AND iibs.relation_plan_id = #{planId}
+		</if>
+		<if test="teacherId != null">
+			AND iws.relation_teacher_id = #{teacherId}
+		</if>
+		)
+	</select>
+	<select id="getInternshipApplyInfoUnFill" resultType="com.above.dto.InternshipInfoFillDto">
+SELECT
+	u.user_avatar as userAvatar,
+	iws.relation_student_id as id,
+	u.user_name as studentName,
+	uc.account_number as studentNumber
+FROM
+	internship_with_student iws
+	left join student_info si on iws.relation_student_id = si.id and si.deleted = 0
+	left join `user` u on si.user_id = u.id and u.deleted = 0
+	left join user_account uc on si.user_id = uc.user_id and uc.deleted = 0
+WHERE
+	iws.deleted = 0
+		<if test="planId != null">
+			AND iws.relation_plan_id = #{planId}
+		</if>
+		<if test="teacherId != null">
+			AND iws.relation_teacher_id = #{teacherId}
+		</if>
+	AND iws.relation_student_id NOT IN (
+	SELECT
+		iibs.relation_student_id
+	FROM
+		internship_info_by_student iibs
+		LEFT JOIN `user` u ON iibs.create_by = u.id
+		AND u.deleted = 0
+		LEFT JOIN user_account uc ON iibs.create_by = uc.user_id
+		AND uc.deleted = 0
+	WHERE
+		iibs.deleted = 0
+		<if test="planId != null">
+			AND iibs.relation_plan_id = #{planId}
+		</if>
+	AND iibs.internship_type = 1
+	AND iibs.relation_student_id IN ( SELECT iws.relation_student_id
+		FROM internship_with_student iws
+		WHERE iws.deleted = 0
+		<if test="planId != null">
+			AND iws.relation_plan_id = #{planId}
+		</if>
+		<if test="teacherId != null">
+			AND iws.relation_teacher_id = #{teacherId}
+		</if> )
+		)
+		limit #{start},#{size}
+	</select>
+	<select id="getInternshipApplyInfoUnFillCount" resultType="java.lang.Integer">
+		SELECT
+		count(*)
+		FROM
+		internship_with_student iws
+		left join student_info si on iws.relation_student_id = si.id and si.deleted = 0
+		left join `user` u on si.user_id = u.id and u.deleted = 0
+		left join user_account uc on si.user_id = uc.user_id and uc.deleted = 0
+		WHERE
+		iws.deleted = 0
+		<if test="planId != null">
+			AND iws.relation_plan_id = #{planId}
+		</if>
+		<if test="teacherId != null">
+			AND iws.relation_teacher_id = #{teacherId}
+		</if>
+		AND iws.relation_student_id NOT IN (
+		SELECT
+		iibs.relation_student_id
+		FROM
+		internship_info_by_student iibs
+		LEFT JOIN `user` u ON iibs.create_by = u.id
+		AND u.deleted = 0
+		LEFT JOIN user_account uc ON iibs.create_by = uc.user_id
+		AND uc.deleted = 0
+		WHERE
+		iibs.deleted = 0
+		<if test="planId != null">
+			AND iibs.relation_plan_id = #{planId}
+		</if>
+		AND iibs.internship_type = 1
+		AND iibs.relation_student_id IN ( SELECT iws.relation_student_id
+		FROM internship_with_student iws
+		WHERE iws.deleted = 0
+		<if test="planId != null">
+			AND iws.relation_plan_id = #{planId}
+		</if>
+		<if test="teacherId != null">
+			AND iws.relation_teacher_id = #{teacherId}
+		</if> )
+		)
 	</select>
 </mapper>

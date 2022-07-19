@@ -36,6 +36,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -115,7 +116,13 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
             Integer departmentId = departmentInfo.getId();
             try {
                 /*判断是否有教师传入，有则添加关联*/
-
+                //判断是否需要添加辅导员
+                if (teacherIds != null && teacherIds.size() > 0){
+                    CommonResult<Object> result = addDepartmentLeader(userDto.getId(), teacherIds, departmentId, 1);
+                    if (!result.isSuccess()){
+                        return result;
+                    }
+                }
                 //添加成功返回
                 return CommonResult.success("添加成功",null);
             }catch (Exception e){
@@ -140,12 +147,9 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
         Integer updateBy = userDto.getId();
         Integer departmentId = departmentVo.getDepartmentId();
         String departmentName = departmentVo.getDepartmentName();
-        List<Integer> teacherIds = departmentVo.getTeacherIdList();
+        List<Integer> teacherIdList = departmentVo.getTeacherIdList();
         List<Integer> deleteTeacherIdList = departmentVo.getDeleteTeacherIdList();
-        //批量添加数组
-        Collection<DepartmentTeacherRelation> teacherRelations = new ArrayList<>();
-        Collection<AuthUserRole> roles = new ArrayList<>();
-
+        //获取当前信息
         DepartmentInfo departmentInfo = super.getById(departmentId);
         //判断二级学院是否存在
         if (departmentInfo == null){
@@ -171,37 +175,25 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
         }
         try {
             //判断二级学院管理是否有传，没有传直接跳过添加校领导
-            if (teacherIds != null&&teacherIds.size()>0){
+            if (teacherIdList != null&&teacherIdList.size()>0){
 
                 /*修改成功判断是否有领导需要更新*/
                 /*判断新老数组是否一致，删除掉一样的元素*/
-                Iterator<Integer> iterator1 = teacherIds.iterator();
-                while (iterator1.hasNext()){
-                    Integer teacherId1 = iterator1.next();
-                    Iterator<Integer> iterator2 = deleteTeacherIdList.iterator();
-                    while(iterator2.hasNext()){
-                        Integer deleteTeacherList =iterator2.next();
-                        if (teacherId1.equals(deleteTeacherList)){
-                            iterator1.remove();
-                            iterator2.remove();
-                        }
+                HashSet<Integer> teacherIds = new HashSet<>(teacherIdList);
+                teacherIds.removeAll(deleteTeacherIdList);
+                teacherIdList = new ArrayList<>(teacherIds);
+                HashSet<Integer> deletedTeacherIds = new HashSet<>(deleteTeacherIdList);
+                deletedTeacherIds.removeAll(teacherIdList);
+                deleteTeacherIdList = new ArrayList<>(deletedTeacherIds);
+
+                //判断是否需要添加辅导员
+                if (teacherIdList.size() > 0){
+                    CommonResult<Object> result = addDepartmentLeader(userDto.getId(),teacherIdList, departmentId, 1);
+                    if (!result.isSuccess()){
+                        return result;
                     }
                 }
 
-                //判断是否要添加
-                if (teacherRelations.size()>0){
-                    boolean save = departmentTeacherService.saveBatch(teacherRelations);
-                    if (!save){
-                        throw new RuntimeException("添加关联信息失败");
-                    }
-                }
-                //判断是否要添加
-                if (roles.size()>0){
-                    boolean save = authUserRoleService.saveBatch(roles);
-                    if (!save){
-                        throw new RuntimeException("添加角色信息失败");
-                    }
-                }
                 flag=true;
             }
             if(deleteTeacherIdList != null && deleteTeacherIdList.size() > 0){
@@ -482,7 +474,7 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
                     CommonResult.error(500,"删除失败");
                 }
             }
-            /*删除后判断该教职工是否需要删除领导角色*/
+            /*删除后判断该教师是否需要删除领导角色*/
             //创建查找，该教师是否还有领导权限
             QueryWrapper<DepartmentTeacherRelation> relationQueryWrapper = new QueryWrapper<>();
             relationQueryWrapper.eq("deleted",BaseVo.UNDELETE)
@@ -647,7 +639,7 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
                 //批量插入集合
                 //用户权限
                 Collection<AuthUserRole> userRoles = new ArrayList<>();
-                //教职工关联
+                //教师关联
                 Collection<DepartmentTeacherRelation> departmentTeacherRelations = new ArrayList<>();
                 Collection<ClassTeacherRelation> classTeacherRelations = new ArrayList<>();
                 Collection<TeacherInfo> updateTeacherInfos = new ArrayList<>();
@@ -694,7 +686,7 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
                         return CommonResult.error(500,"请检查二级学院信息是否存在");
                     }
 
-                    //判断两种种教职工是否存在（不用判断校领导）
+                    //判断两种种教师是否存在（不用判断校领导）
                     //判断领导
                     if (!StringUtils.isBlank(departmentName)){
                         //判断系管
@@ -711,7 +703,7 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
                                         departmentLeaderInfo = info;
                                         isExist = true;
                                     }else {
-                                        return CommonResult.error(500,"教职工【"+departmentLeader+"】与工号【"+departmentLeaderNum+"】不符");
+                                        return CommonResult.error(500,"教师【"+departmentLeader+"】与工号【"+departmentLeaderNum+"】不符");
                                     }
                                     break;
                                 }
@@ -747,7 +739,7 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
                                         classLeaderInfo = info;
                                         isExist = true;
                                     }else {
-                                        return CommonResult.error(500,"教职工【"+classLeader+"】与工号【"+classLeaderNum+"】不符");
+                                        return CommonResult.error(500,"教师【"+classLeader+"】与工号【"+classLeaderNum+"】不符");
                                     }
                                     break;
                                 }
@@ -813,7 +805,7 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
                                 DepartmentTeacherRelation departmentTeacherRelation = new DepartmentTeacherRelation();
                                 //关联学校id
                                 departmentTeacherRelation.setDepartmentId(departmentId);
-                                //关联教职工id
+                                //关联教师id
                                 departmentTeacherRelation.setTeacherId(departmentLeaderInfo.getId());
                                 departmentTeacherRelation.setRelationType(1);
                                 departmentTeacherRelation.setCreateBy(createBy);
@@ -974,7 +966,7 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
                                 ClassTeacherRelation classTeacherRelation = new ClassTeacherRelation();
                                 //关联学校id
                                 classTeacherRelation.setClassId(classId);
-                                //关联教职工id
+                                //关联教师id
                                 classTeacherRelation.setTeacherId(classLeaderInfo.getId());
                                 classTeacherRelation.setTeacherName(classLeaderInfo.getTeacherName());
                                 classTeacherRelation.setRelationType(1);
@@ -1015,7 +1007,7 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
                                 ClassTeacherRelation classTeacherRelation = new ClassTeacherRelation();
                                 //关联学校id
                                 classTeacherRelation.setClassId(classId);
-                                //关联教职工id
+                                //关联教师id
                                 classTeacherRelation.setRelationType(1);
                                 classTeacherRelation.setCreateBy(createBy);
                                 classTeacherRelation.setTeacherName(classTeacher);
@@ -1096,7 +1088,86 @@ public class DepartmentInfoServiceImpl extends ServiceImpl<DepartmentInfoMapper,
         }
     }
 
+    /**
+     * @Description: 添加辅导员管理
+     * @Author: LZH
+     * @Date: 2022/1/12 19:43
+     */
+    private CommonResult<Object> addDepartmentLeader(Integer updateBy, Collection<Integer> teacherIdList,Integer departmentId,Integer relationType) {
 
+        List<TeacherInfo> teacherInfos = teacherInfoMapper.selectBatchIds(teacherIdList);
+        List<Integer> userIds = teacherInfos.stream().map(TeacherInfo::getUserId).collect(Collectors.toList());
+        //创建查找
+        QueryWrapper<DepartmentTeacherRelation> teacherRelationQueryWrapper = new QueryWrapper<>();
+        teacherRelationQueryWrapper.eq("deleted",BaseVo.UNDELETE).eq("department_id",departmentId)
+                .in("teacher_id",teacherIdList).eq("relation_type",relationType);
+        //获取该校领导
+        List<DepartmentTeacherRelation> relations = departmentTeacherService.list(teacherRelationQueryWrapper);
+
+        QueryWrapper<AuthUserRole> roleQueryWrapper = new QueryWrapper<>();
+        roleQueryWrapper.in("user_id",userIds).eq("role_id",3)
+                .eq("deleted",BaseVo.UNDELETE);
+        List<AuthUserRole> roles = authUserRoleService.list(roleQueryWrapper);
+
+        ArrayList<AuthUserRole> authUserRoles = new ArrayList<>();
+        ArrayList<DepartmentTeacherRelation> relationlist = new ArrayList<>();
+        //循环判断删除
+        for (TeacherInfo info: teacherInfos){
+
+            boolean flag = true;
+            for (DepartmentTeacherRelation data:relations) {
+                if (data.getTeacherId().equals(info.getId())){
+                    flag = false;
+                    break;
+                }
+            }
+
+            if (flag){
+                DepartmentTeacherRelation relation = new DepartmentTeacherRelation();
+                relation.setRelationType(1).setTeacherId(info.getId());
+                relation.setDepartmentId(departmentId).setDeleted(BaseVo.UNDELETE);
+                relationlist.add(relation);
+            }
+
+            //辅导员需要判断权限
+            if (relationType.equals(1)){
+                /*删除后判断该教师是否需要删除领导角色*/
+                boolean hasRole = true;
+                for (AuthUserRole exist: roles){
+                    if (exist.getUserId().equals(info.getUserId())) {
+                        hasRole = false;
+                        break;
+                    }
+                }
+                //若无权限则添加
+                if (hasRole){
+                    AuthUserRole role = new AuthUserRole();
+                    //设置更新信息
+                    role.setRoleId(3);
+                    role.setUserId(info.getUserId());
+                    role.setDeleted(BaseVo.UNDELETE);
+                    role.setCreateBy(updateBy);
+                    authUserRoles.add(role);
+                }
+            }
+
+        }
+        //循环结束批量添加
+        if (authUserRoles.size() > 0){
+            boolean b = authUserRoleService.updateBatchById(authUserRoles);
+            if (!b){
+                return CommonResult.error(500,"权限删除失败");
+            }
+        }
+        if (relationlist.size() > 0){
+            boolean b = departmentTeacherService.updateBatchById(relationlist);
+            if (!b){
+                return CommonResult.error(500,"权限删除失败");
+            }
+        }
+        log.info("添加角色成功");
+        return CommonResult.success("修改完成");
+    }
 
 
 

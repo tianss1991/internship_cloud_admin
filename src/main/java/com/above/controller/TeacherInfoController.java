@@ -26,14 +26,14 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * <p>
- * 教职工信息表 前端控制器
+ * 教师信息表 前端控制器
  * </p>
  *
  * @author mp
  * @since 2022-01-10
  */
 @Slf4j
-@Api(tags = {"教职工管理接口"})
+@Api(tags = {"教师管理接口"})
 @RestController
 @RequestMapping("/teacherInfo")
 public class TeacherInfoController {
@@ -42,11 +42,11 @@ public class TeacherInfoController {
     private TeacherInfoService teacherInfoService;
 
     /**
-     * @Description: 添加教职工接口
+     * @Description: 添加教师接口
      * @Author: LZH
      * @Date: 2022/1/11 10:32
      */
-    @ApiOperation("添加教职工接口")
+    @ApiOperation("添加教师接口")
     @RequiresRoles(value = {"admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("addTeacher")
     public CommonResult<Object> addTeacherInfo(HttpServletRequest request, @RequestBody TeacherVo teacherVo){
@@ -57,13 +57,13 @@ public class TeacherInfoController {
             return CommonResult.error(500,"缺少参数");
         }
         if (StringUtils.isBlank(teacherVo.getWorkNumber())) {
-            return CommonResult.error(500,"缺少教职工工号");
+            return CommonResult.error(500,"缺少教师工号");
         }
         if (StringUtils.isBlank(teacherVo.getTeacherName())) {
-            return CommonResult.error(500,"缺少教职工姓名");
+            return CommonResult.error(500,"缺少教师姓名");
         }
         if (teacherVo.getGender() == null) {
-            return CommonResult.error(500,"缺少教职工姓名");
+            return CommonResult.error(500,"缺少教师性别");
         }
 
 
@@ -75,11 +75,11 @@ public class TeacherInfoController {
     }
 
     /**
-     * @Description: 修改教职工接口
+     * @Description: 修改教师接口
      * @Author: LZH
      * @Date: 2022/1/11 11:27
      */
-    @ApiOperation("修改教职工接口")
+    @ApiOperation("修改教师接口")
     @RequiresRoles(value = {"admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("modifyTeacher")
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
@@ -105,11 +105,11 @@ public class TeacherInfoController {
     }
 
     /**
-     * @Description: 删除教职工
+     * @Description: 删除教师
      * @Author: LZH
      * @Date: 2022/1/11 11:40
      */
-    @ApiOperation("删除教职工")
+    @ApiOperation("删除教师")
     @RequiresRoles(value = {"admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("deleteTeacher")
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
@@ -142,11 +142,11 @@ public class TeacherInfoController {
     }
 
     /**
-     * @Description: 获取教职工列表
+     * @Description: 获取教师列表
      * @Author: LZH
      * @Date: 2022/1/11 11:55
      */
-    @ApiOperation("获取教职工列表")
+    @ApiOperation("获取教师列表")
     @RequiresRoles(value = {"admin", "departmentAdmin", "schoolAdmin","teacher", "instructorSchool","instructorDepartment"}, logical = Logical.OR)
     @GetMapping("getTeacherList")
     public CommonResult<Object> getTeacherList(HttpServletRequest request,TeacherVo teacherVo){
@@ -172,11 +172,11 @@ public class TeacherInfoController {
     }
 
     /**
-     * @Description: 教职工信息导入接口
+     * @Description: 教师信息导入接口
      * @Author: LZH
      * @Date: 2022/1/13 16:32
      */
-    @ApiOperation("教职工信息导入接口")
+    @ApiOperation("教师信息导入接口")
     @RequiresRoles(value = {"admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("importTeacherInfo")
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)

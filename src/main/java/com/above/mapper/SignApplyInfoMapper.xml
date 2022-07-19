@@ -2,4 +2,68 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.above.dao.SignApplyInfoMapper">
 
+    <sql id="signApplyDto">
+        sai.id,
+        sai.student_id,
+        sai.internship_id,
+        sai.internship_plan_id,
+        sai.apply_type,
+        sai.img_url,
+        sai.sign_id,
+        sai.create_by,
+        sai.update_by,
+        sai.update_time,
+        sai.fail_reason,
+        sai.apply_time,
+        sai.create_time,
+        sai.reason,
+        sai.`status`
+    </sql>
+
+    <select id="getSignApplyList" resultType="com.above.dto.SignApplyWithStudentDto">
+        SELECT
+        <include refid="signApplyDto"/>,
+            s.student_name as studentName
+        FROM
+            sign_apply_info AS sai
+                LEFT JOIN student_info AS s ON sai.student_id = s.id
+        <where>
+            <if test="studentListType == 1">
+                sai.`status` IN ( 2, 3 )
+            </if>
+            <if test="studentListType == 2">
+                sai.`status` IN ( 1 )
+            </if>
+            <if test="classId != null">
+                AND s.class_id = #{classId}
+            </if>
+            <if test="key != null and key != ''">
+                and s.student_name like concat('%',#{key},'%')
+            </if>
+        </where>
+        order by s.student_number asc
+
+    </select>
+    <select id="getSignApplyListTotalCount" resultType="java.lang.Integer">
+        SELECT
+            count(1)
+        FROM
+        sign_apply_info AS sai
+        LEFT JOIN student_info AS s ON sai.student_id = s.id
+      <where>
+          <if test="studentListType == 1">
+              sai.`status` IN ( 2, 3 )
+          </if>
+          <if test="studentListType == 2">
+              sai.`status` IN ( 1 )
+          </if>
+          <if test="classId != null">
+              AND s.class_id = #{classId}
+          </if>
+          <if test="key != null and key != ''">
+              and s.student_name like concat('%',#{key},'%')
+          </if>
+      </where>
+
+    </select>
 </mapper>

@@ -91,6 +91,9 @@ public class BaseVo {
     @ApiModelProperty(value = "教师id")
     private Integer teacherId;
 
+    @ApiModelProperty(value = "学生id")
+    private Integer studentId;
+
     @ApiModelProperty(value = "教师ids")
     private List<Integer> teacherIdList;
 
@@ -107,6 +110,12 @@ public class BaseVo {
 
     @ApiModelProperty(value = "搜索关键字")
     private String key;
+
+    @ApiModelProperty(value = "经度")
+    private String latitude;
+
+    @ApiModelProperty(value = "纬度")
+    private String longitude;
 
     @ApiModelProperty(value = "状态")
 //   请假单： value = "申请状态 1-待审核 2-驳回 3-通过（修改打卡状态）

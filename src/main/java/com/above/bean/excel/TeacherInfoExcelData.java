@@ -4,7 +4,7 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.Data;
 
 /**
- * @Description: 教职工excel导入
+ * @Description: 教师excel导入
  * @Author: LZH
  * @Date: 2022/1/13 16:46
  */

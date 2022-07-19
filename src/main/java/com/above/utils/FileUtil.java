@@ -1,5 +1,6 @@
 package com.above.utils;
 
+import com.above.config.server.ServerConfig;
 import com.above.vo.FileVo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,13 +23,12 @@ public class FileUtil {
      * @Author: LZH
      * @Date: 2022/1/10 11:47
      */
-    private static final String SAVE_URl = ResourcesUtil.getValue("fileConfig", "saveUrl");
+    private static final String SAVE_URl = ServerConfig.localSaveUrl;
     /**
      * @Description: 下载文件的地址
      * @Author: LZH
      * @Date: 2022/1/10 11:47
      */
-    private static final String DOWNLOAD_Url = ResourcesUtil.getValue("fileConfig", "downloadUrl");
 
     public static String localSave(MultipartFile file, FileVo fileVo) throws IOException {
 
@@ -61,7 +61,7 @@ public class FileUtil {
             e.printStackTrace();
             return "false";
         }
-        return DOWNLOAD_Url+folder+date+"/"+fileName;
+        return SAVE_URl + folder + date + "/" + fileName;
     }
 
     /**

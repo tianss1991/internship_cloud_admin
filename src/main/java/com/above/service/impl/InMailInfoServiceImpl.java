@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
  * </p>
  *
  * @author mp
- * @since 2022-06-21
+ * @since 2022-07-13
  */
 @Service
 public class InMailInfoServiceImpl extends ServiceImpl<InMailInfoMapper, InMailInfo> implements InMailInfoService {

@@ -34,7 +34,7 @@ public class TeacherVo extends BaseVo{
     @ApiModelProperty(value = "部门名称")
     private String departmentName;
 
-    @ApiModelProperty(value = "教职工编制类别")
+    @ApiModelProperty(value = "教师编制类别")
     private String workType;
 
     @ApiModelProperty(value = "移动电话")

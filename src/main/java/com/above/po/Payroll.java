@@ -39,6 +39,7 @@ public class Payroll implements Serializable {
 
     @ApiModelProperty(value = "时间")
     @JsonFormat(pattern = "yyyy-MM")
+    @DateTimeFormat(pattern = "yyyy-MM")
     @TableField("date_time")
     private Date dateTime;
 
@@ -64,6 +65,7 @@ public class Payroll implements Serializable {
 
     @ApiModelProperty(value = "创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private Date createTime;
 
@@ -72,6 +74,7 @@ public class Payroll implements Serializable {
     private Integer updateBy;
 
     @ApiModelProperty(value = "更新时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @TableField(value = "update_time", fill = FieldFill.UPDATE)
     private Date updateTime;

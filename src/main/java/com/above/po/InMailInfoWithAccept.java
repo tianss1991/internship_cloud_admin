@@ -19,7 +19,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author mp
- * @since 2022-06-21
+ * @since 2022-07-13
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -64,10 +64,6 @@ public class InMailInfoWithAccept implements Serializable {
     @ApiModelProperty(value = "逻辑删除 0-未删除 1-已删除")
     @TableField(value = "deleted", fill = FieldFill.INSERT)
     private Integer deleted;
-
-    @ApiModelProperty(value = "站内信状态 1-正常 2-紧急")
-    @TableField("status")
-    private Integer status;
 
 
 }

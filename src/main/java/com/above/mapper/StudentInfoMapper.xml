@@ -24,7 +24,7 @@
     </sql>
     <sql id="baseLeftJoinField">
         sc.school_name as schoolName,
-        de.department_name as gradeName,
+        de.department_name as gradeYear,
         cla.class_name as departmentName,
         ma.major_name as majorName,
         gr.grade_year as className
@@ -38,21 +38,21 @@
     </sql>
     <select id="selectStudentById" resultType="com.above.dto.StudentInfoDto">
         SELECT
-            <include refid="studentInfo"></include>,
-            <include refid="baseLeftJoinField"></include>
+        <include refid="studentInfo"/>,
+            <include refid="baseLeftJoinField"/>
         FROM
             student_info AS s
-            <include refid="baseLeftJoin"></include>
+            <include refid="baseLeftJoin"/>
         WHERE
             s.id = #{studentId}
     </select>
     <select id="selectStudentListByBaseVo" resultType="com.above.dto.StudentInfoDto">
         SELECT
-            <include refid="studentInfo"></include>,
-            <include refid="baseLeftJoinField"></include>
+        <include refid="studentInfo"/>,
+            <include refid="baseLeftJoinField"/>
         FROM
             student_info AS s
-            <include refid="baseLeftJoin"></include>
+            <include refid="baseLeftJoin"/>
         <where>
             <if test="schoolId != null and schoolId > 0">
                 s.school_id = #{schoolId}
@@ -95,13 +95,240 @@
     </select>
     <select id="selectStudentByUserId" resultType="com.above.dto.StudentInfoDto">
         SELECT
-        <include refid="studentInfo"></include>,
-        <include refid="baseLeftJoinField"></include>
+        <include refid="studentInfo"/>,
+        <include refid="baseLeftJoinField"/>
         FROM
         student_info AS s
-        <include refid="baseLeftJoin"></include>
+        <include refid="baseLeftJoin"/>
         WHERE
         s.user_id = #{userId}
+    </select>
+    <select id="selectStudentSignList" resultType="com.above.dto.StudentInfoDto">
+        select
+        *
+        from (
+        SELECT
+        <include refid="studentInfo"/>,
+        <include refid="baseLeftJoinField"/>,
+                (SELECT
+                    count(1)
+                FROM
+                    sign_apply_info
+                <where>
+                    sign_date = #{date}
+                    AND sign_status = 1
+                    AND student_id = s.id
+                    <if test="planId != null and planId > 0">
+                        internship_plan_id = #{planId}
+                    </if>
+                </where>
+                ) signTimes
+            FROM
+                student_info AS s
+                <include refid="baseLeftJoin"/>
+            <where>
+                <if test="classIdList != null and classIdList.size()>0">
+                    AND s.class_id IN
+                    <foreach collection="classIdList" index="index" item="id" open="(" separator="," close=")">
+                        #{id}
+                    </foreach>
+                </if>
+                <if test="key != null and key != ''">
+                    s.student_name like concat('%',#{key},'%')
+                </if>
+            </where>
+            order by s.student_name
+        ) info
+        <where>
+            <if test="studentListType == 1">
+                and signTimes = 0
+            </if>
+            <if test="studentListType == 2">
+                and signTimes > 0
+            </if>
+        </where>
+        limit #{start},#{size}
+    </select>
+    <select id="selectStudentSignListTotalCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from (
+        SELECT
+        <include refid="studentInfo"/>,
+        <include refid="baseLeftJoinField"/>,
+        (SELECT
+        count(1)
+        FROM
+        sign_apply_info
+        <where>
+            sign_date = #{date}
+            AND sign_status = 1
+            AND student_id = s.id
+            <if test="planId != null and planId > 0">
+                internship_plan_id = #{planId}
+            </if>
+        </where>
+        ) signTimes
+        FROM
+        student_info AS s
+        <include refid="baseLeftJoin"/>
+        <where>
+            <if test="classIdList != null and classIdList.size()>0">
+                AND s.class_id IN
+                <foreach collection="classIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="key != null and key != ''">
+                s.student_name like concat('%',#{key},'%')
+            </if>
+        </where>
+        order by s.student_name
+        ) info
+        <where>
+            <if test="studentListType == 1">
+                and signTimes = 0
+            </if>
+            <if test="studentListType == 2">
+                and signTimes > 0
+            </if>
+        </where>
+    </select>
+    <select id="selectStudentSignListByTeacher" resultType="com.above.dto.StudentInfoDto">
+        select
+        <include refid="studentInfo"/>,
+        <include refid="baseLeftJoinField"/>
+        from (
+        SELECT
+        iws.relation_student_id AS studentId
+        (SELECT
+        count(1)
+        FROM
+        sign_apply_info
+        <where>
+            sign_date = #{date}
+            AND sign_status = 1
+            AND student_id = s.id
+            <if test="planId != null and planId > 0">
+                internship_plan_id = #{planId}
+            </if>
+        </where>
+        ) signTimes
+        FROM
+        internship_with_student AS iws
+        ) info
+        left join student_info AS s on info.studentId = s.id
+        <include refid="baseLeftJoin"/>
+        <where>
+
+            <if test="classIdList != null and classIdList.size()>0">
+                AND s.class_id IN
+                <foreach collection="classIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="key != null and key != ''">
+                s.student_name like concat('%',#{key},'%')
+            </if>
+            <if test="studentListType == 1">
+                and info.signTimes = 0
+            </if>
+            <if test="studentListType == 2">
+                and info.signTimes > 0
+            </if>
+
+        </where>
+        order by s.student_name
+
+    </select>
+    <select id="selectStudentSignListByTeacherTotalCount" resultType="java.lang.Integer">
+        select
+         count(1)
+        from (
+        SELECT
+        iws.relation_student_id AS studentId
+        (SELECT
+        count(1)
+        FROM
+        sign_apply_info
+        <where>
+            sign_date = #{date}
+            AND sign_status = 1
+            AND student_id = s.id
+            <if test="planId != null and planId > 0">
+                internship_plan_id = #{planId}
+            </if>
+        </where>
+        ) signTimes
+        FROM
+        internship_with_student AS iws
+        ) info
+        left join student_info AS s on info.studentId = s.id
+        <include refid="baseLeftJoin"/>
+        <where>
+
+            <if test="classIdList != null and classIdList.size()>0">
+                AND s.class_id IN
+                <foreach collection="classIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="key != null and key != ''">
+                s.student_name like concat('%',#{key},'%')
+            </if>
+            <if test="studentListType == 1">
+                and info.signTimes = 0
+            </if>
+            <if test="studentListType == 2">
+                and info.signTimes > 0
+            </if>
+
+        </where>
+        order by s.student_name
+    </select>
+    <select id="selectStudentListByBaseVoCount" resultType="java.lang.Integer">
+        SELECT
+        count(s.id)
+        FROM
+        student_info AS s
+        <where>
+            <if test="schoolId != null and schoolId > 0">
+                s.school_id = #{schoolId}
+            </if>
+            <if test="schoolIdList != null and schoolIdList.size()>0">
+                AND s.school_id IN
+                <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="departmentId != null and departmentId > 0">
+                s.department_id = #{departmentId}
+            </if>
+            <if test="departmentIdList != null and departmentIdList.size()>0">
+                AND s.department_id IN
+                <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="classId != null and classId > 0">
+                s.class_id = #{classId}
+            </if>
+            <if test="classIdList != null and classIdList.size()>0">
+                AND s.class_id IN
+                <foreach collection="classIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="majorId != null and majorId > 0">
+                s.major_id = #{majorId}
+            </if>
+            <if test="gradeId != null and gradeId > 0">
+                s.grade_id = #{gradeId}
+            </if>
+            <if test="key != null and key != ''">
+                s.student_name like concat('%',#{key},'%')
+            </if>
+        </where>
     </select>
 
 </mapper>

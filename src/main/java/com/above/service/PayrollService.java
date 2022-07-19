@@ -42,7 +42,7 @@ public interface PayrollService extends IService<Payroll> {
      * @Author: YJH
      * @Date: 2022/7/6 14:20
      */
-    CommonResult<Object> getPayrollDeta(UserDto userDto, PayrollVo vo);
+    CommonResult<Object> getPayrollDetail(UserDto userDto, PayrollVo vo);
 
     /**
      * @Description: pc端工资单管理

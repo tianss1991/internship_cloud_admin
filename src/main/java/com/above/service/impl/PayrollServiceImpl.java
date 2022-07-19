@@ -56,6 +56,7 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
         Integer createBy = userDto.getId();
         Date dateTime = vo.getDateTime();
         String imgUrl = vo.getImgUrl();
+        BigDecimal salary = vo.getSalary();
         String number = userDto.getAccountNumber();
 
         //查询学生是否存在
@@ -69,7 +70,7 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
         Integer id = studentInfo.getId();
 
         QueryWrapper<InternshipInfoByStudent> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("relation_student_id",id);
+        queryWrapper.eq("relation_student_id",id).eq("deleted",BaseVo.UNDELETE);
         InternshipInfoByStudent infoByStudent = infoByStudentMapper.selectOne(queryWrapper);
         //获取学生关联实习id
         Integer infoByStudentId = infoByStudent.getId();
@@ -80,7 +81,7 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
         //创建工资单实体类
         Payroll payroll = new Payroll();
         //工资
-        payroll.setSalary(vo.getSalary());
+        payroll.setSalary(salary);
         //时间
         payroll.setDateTime(dateTime);
         //图片地址
@@ -150,12 +151,32 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
 
     //查询工资单详情
     @Override
-    public CommonResult<Object> getPayrollDeta(UserDto userDto, PayrollVo vo) {
-        Integer studentId = vo.getStudentId();
+    public CommonResult<Object> getPayrollDetail(UserDto userDto, PayrollVo vo) {
+       //工资单id
+        Integer id = vo.getId();
 
+        if (id==null || id==0){
+            return CommonResult.error(500,"缺少工资单id");
+        }
+        //获取学生实习工资、实习时间、图片
+        QueryWrapper<Payroll> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("deleted", BaseVo.UNDELETE)
+                .eq("id",id);
+        Payroll payroll = payrollMapper.selectOne(queryWrapper);
+        //学生id
+        Integer studentId = payroll.getStudentId();
         if (studentId==null || studentId==0){
             return CommonResult.error(500,"缺少学生id");
         }
+        //学生实习工资
+        BigDecimal salary = payroll.getSalary();
+        //实习时间
+        Date dateTime = payroll.getDateTime();
+        //工资单创建时间
+        Date createTime = payroll.getCreateTime();
+        //图片
+        String imgUrl = payroll.getImgUrl();
+
         //获取学生编号
         QueryWrapper<StudentInfo> qw = new QueryWrapper<>();
         qw.eq("id",studentId).eq("deleted",BaseVo.UNDELETE);
@@ -168,19 +189,7 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
         User user = userMapper.selectOne(wrapper);
         String userName = user.getUserName();
         String userAvatar = user.getUserAvatar();
-        //获取学生实习工资、实习时间、图片
-        QueryWrapper<Payroll> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("deleted", BaseVo.UNDELETE)
-                    .eq("student_id",studentId);
-        Payroll payroll = payrollMapper.selectOne(queryWrapper);
-        //学生实习工资
-        BigDecimal salary = payroll.getSalary();
-        //实习时间
-        Date dateTime = payroll.getDateTime();
-        //工资单创建时间
-        Date createTime = payroll.getCreateTime();
-        //图片
-        String imgUrl = payroll.getImgUrl();
+
         //获取学生单位岗位
         QueryWrapper<InternshipInfoByStudent> wrapper1 = new QueryWrapper<>();
         wrapper1.eq("relation_student_id",studentId).eq("deleted", BaseVo.UNDELETE);

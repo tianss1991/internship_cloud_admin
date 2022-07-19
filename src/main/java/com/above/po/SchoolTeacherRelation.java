@@ -34,7 +34,7 @@ public class SchoolTeacherRelation implements Serializable {
     @TableField("school_id")
     private Integer schoolId;
 
-    @ApiModelProperty(value = "教职工编号")
+    @ApiModelProperty(value = "教师编号")
     @TableField("teacher_id")
     private Integer teacherId;
 

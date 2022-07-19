@@ -1,6 +1,8 @@
 package com.above.dao;
 
+import com.above.dto.InternshipApplyInfoDto;
 import com.above.dto.InternshipCheckDto;
+import com.above.dto.InternshipInfoFillDto;
 import com.above.dto.LeaderList;
 import com.above.po.InternshipInfoByStudent;
 import com.above.vo.InternshipApplicationVo;
@@ -45,6 +47,42 @@ public interface InternshipInfoByStudentMapper extends BaseMapper<InternshipInfo
     *@function:实习申请、实习岗位修改与企业变更申请、免实习申请、就业上报未审核列表（教师）
     */
     List<InternshipCheckDto> internshipInfoUnCheckList(InternshipApplicationVo vo);
+
+    /**
+    *@author: GG
+    *@data: 2022/7/12 15:23
+    *@function:展示单条实习申请内容
+    */
+    InternshipApplyInfoDto displaySingleInternshipApplyInfo(InternshipApplicationVo vo);
+
+
+    /**
+    *@author: GG
+    *@data: 2022/7/19 9:27
+    *@function:获取实习岗位已填报学生列表
+    */
+    List<InternshipInfoFillDto> getInternshipApplyInfoFilled(InternshipApplicationVo vo);
+
+    /**
+     *@author: GG
+     *@data: 2022/7/19 9:27
+     *@function:获取实习岗位已填报学生数量
+     */
+    Integer getInternshipApplyInfoFilledCount(InternshipApplicationVo vo);
+
+    /**
+    *@author: GG
+    *@data: 2022/7/19 9:28
+    *@function:获取实习岗位未填报学生列表
+    */
+    List<InternshipInfoFillDto> getInternshipApplyInfoUnFill(InternshipApplicationVo vo);
+
+    /**
+     *@author: GG
+     *@data: 2022/7/19 9:28
+     *@function:获取实习岗位未填报学生数量
+     */
+    Integer getInternshipApplyInfoUnFillCount(InternshipApplicationVo vo);
 
 
 

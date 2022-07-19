@@ -95,6 +95,7 @@
    </select>
    <select id="getStudentPayrollList" resultType="com.above.dto.PayrollDto">
       SELECT
+      p.id,
       p.student_id AS studentId,
       iibs.company_name AS companyName,
       p.date_time AS dateTime

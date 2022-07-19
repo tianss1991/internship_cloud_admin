@@ -9,7 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * </p>
  *
  * @author mp
- * @since 2022-06-21
+ * @since 2022-07-13
  */
 public interface InMailInfoService extends IService<InMailInfo> {
 

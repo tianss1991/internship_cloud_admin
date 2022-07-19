@@ -1,11 +1,7 @@
 package com.above.dao;
 
-import com.above.dto.InternshipCheckDto;
 import com.above.dto.LeaveApplyInfoDto;
-import com.above.dto.UserDto;
 import com.above.po.LeaveApplyInfo;
-import com.above.utils.CommonResult;
-import com.above.vo.InternshipApplicationVo;
 import com.above.vo.LeaveApplyInfoVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 

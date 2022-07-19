@@ -1,37 +1,30 @@
 package com.above.service.impl;
 
-import com.above.bean.excel.StudentInfoExcelData;
-import com.above.config.easyExcel.StudentInfoExcelListener;
 import com.above.dao.*;
+import com.above.dto.StudentInfoDto;
 import com.above.dto.UserDto;
+import com.above.exception.OptionDateBaseException;
 import com.above.po.*;
 import com.above.service.*;
 import com.above.utils.CommonResult;
 import com.above.utils.PasswordCryptoTool;
-import com.above.utils.RandomUtil;
 import com.above.vo.BaseVo;
-import com.above.vo.LeaveApplyInfoVo;
 import com.above.vo.StudentVo;
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelReader;
-import com.alibaba.excel.read.metadata.ReadSheet;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -61,6 +54,8 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
     private MajorInfoMapper majorInfoMapper;
     @Autowired
     private AuthUserRoleService authUserRoleService;
+    @Autowired
+    private InternshipWithStudentService internshipWithStudentService;
 
     /**
      * @param userDto 用户信息
@@ -70,8 +65,8 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
      * @Date: 2022/07/01 15:21
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
-    public CommonResult<Object> addStudent(StudentVo vo, UserDto userDto) {
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = OptionDateBaseException.class)
+    public CommonResult<Object> addStudent(StudentVo vo, UserDto userDto) throws OptionDateBaseException {
         //系部，先从vo拿，后续需要从useDto拿
         Integer departmentId = vo.getDepartmentId();
         //学校
@@ -137,7 +132,6 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
         user.setStatus(0);
         //插入数据库
         boolean saveUser = userService.save(user);
-        try {
             //判断是否存储成功
             if (!saveUser) {
                 return CommonResult.error(500, "创建用户信息失败");
@@ -155,7 +149,7 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
             //插入数据库
             boolean saveAccount = userAccountService.save(userAccount);
             if (!saveAccount){
-                throw new RuntimeException("创建账号信息失败");
+                throw new OptionDateBaseException("创建账号信息失败");
             }
 
             //添加权限
@@ -166,7 +160,7 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
             //保存
             boolean save = authUserRoleService.save(authUserRole);
             if(!save){
-                throw new RuntimeException("创建权限失败");
+                throw new OptionDateBaseException("创建权限失败");
             }
 
             //新建对象
@@ -195,11 +189,6 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
             if (!saveStudnet) {
                 return CommonResult.error(500, "管理员操作失败");
             }
-        }catch (Exception e){
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            log.info(e.getMessage());
-            return CommonResult.error(500,e.getMessage());
-        }
         return CommonResult.success("管理员操作成功");
     }
 
@@ -211,8 +200,8 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
      * @Date: 2022/07/01 15:41
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
-    public CommonResult<Object> modifyStudent(StudentVo vo, UserDto userDto) {
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = OptionDateBaseException.class)
+    public CommonResult<Object> modifyStudent(StudentVo vo, UserDto userDto) throws OptionDateBaseException{
         //系部，先从vo拿，后续需要从useDto拿
         Integer departmentId = vo.getDepartmentId();
         //学校
@@ -265,7 +254,7 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
                         studentInfo.setStudentName(studentName);
                         flag=true;
                     }else {
-                        throw new RuntimeException("修改账号失败");
+                        throw new OptionDateBaseException("修改账号失败");
                     }
 
                 }
@@ -329,7 +318,7 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
                         studentInfo.setStudentNumber(studentNumber);
                         flag=true;
                     }else {
-                        throw new RuntimeException("修改账号失败");
+                        throw new OptionDateBaseException("修改账号失败");
                     }
                 }
             }
@@ -382,12 +371,12 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
                 if (b){
                     return CommonResult.success("修改成功",null);
                 }else {
-                    throw new RuntimeException("修改失败");
+                    throw new OptionDateBaseException("修改失败");
                 }
             }else {
                 return CommonResult.error(500,"无需修改");
             }
-        }catch (Exception e){
+        }catch (OptionDateBaseException e){
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             log.info(e.getMessage());
             return CommonResult.error(500,e.getMessage());
@@ -403,116 +392,113 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
      * @Date: 2022/07/01 15:51
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
-    public CommonResult<Object> deleteStudent(StudentVo vo, UserDto userDto) {
-        try{
-            //获取参数
-            List<Integer> studentIdList = vo.getStudentIds();
-            Integer updateBy = userDto.getId();
-            //批量查询
-            Collection<StudentInfo> studentInfos = super.getBaseMapper().selectBatchIds(studentIdList);
-            //判断是否全部都有查出
-            if (studentIdList.size() > studentInfos.size()){
-                return CommonResult.error(500,"有学生已被删除");
-            }
-            //循环修改为删除状态
-            for (StudentInfo info:studentInfos) {
-                // 查看该学生是否状态为删除
-                if (info.getDeleted()==1) {
-                    return CommonResult.error(500, "【" + info.getStudentNumber() + "】该学生已删除");
-                }
-                //设置为删除状态
-                info.setDeleted(1);
-                //设置更新人
-                info.setUpdateBy(updateBy);
-            }
-            //修改教职工信息
-            boolean i = super.updateBatchById(studentInfos);
-            //若修改后进入try-catch中，
-
-            if (i){
-                //设置批量删除数组
-                Collection<User> users = new ArrayList<>();
-                Collection<UserAccount> userAccounts = new ArrayList<>();
-                Collection<AuthUserRole> userRoles = new ArrayList<>();
-
-                //循环删除学生信息
-                for (StudentInfo info:studentInfos) {
-                    //用户id
-                    Integer userId = info.getUserId();
-                    //学生id
-                    Integer studentId = info.getId();
-                    /*设置学生账号为删除状态*/
-                    //根据user_id获取
-                    User user = userService.getById(userId);
-                    if (user != null){
-                        user.setUpdateBy(updateBy);
-                        //设置删除状态
-                        user.setDeleted(User.DELETED);
-                        //添加到批量删除数组
-                        users.add(user);
-                    }
-
-                    //用户账户信息表
-                    QueryWrapper<UserAccount> accountQueryWrapper = new QueryWrapper<>();
-                    accountQueryWrapper.eq("user_id",userId).eq("deleted",0);
-                    UserAccount userAccount = userAccountService.getOne(accountQueryWrapper);
-                    if (userAccount != null){
-                        //修改状态
-                        userAccount.setDeleted(1);
-                        userAccount.setUpdateBy(updateBy);
-                        //添加到批量删除数组
-                        userAccounts.add(userAccount);
-                    }
-                    /*删除权限*/
-                    QueryWrapper<AuthUserRole> authUserRoleQueryWrapper = new QueryWrapper<>();
-                    authUserRoleQueryWrapper.eq("user_id",userId).eq("deleted",0);
-                    AuthUserRole userRole = authUserRoleService.getOne(authUserRoleQueryWrapper);
-                    if (userAccount != null){
-                        userRole.setUpdateBy(updateBy);
-                        userRole.setDeleted(1);
-                        userRoles.add(userRole);
-                    }
-                }
-                //进行批量修改
-                boolean updateUser = userService.updateBatchById(users);
-                if (!updateUser){
-                    throw new RuntimeException("删除用户异常");
-                }
-                boolean updateAccount = userAccountService.updateBatchById(userAccounts);
-                if (!updateAccount){
-                    throw new RuntimeException("删除用户异常");
-                }
-                //判断是否需要更新
-                if (userRoles.size()>0) {
-                    boolean updateClass = authUserRoleService.updateBatchById(userRoles);
-                    if (!updateClass) {
-                        throw new RuntimeException("删除用户异常");
-                    }
-                }
-                //返回
-                return CommonResult.success("删除成功",null);
-            }else {
-                throw new RuntimeException("删除用户异常");
-            }
-        }catch (Exception e){
-            log.info(e.getMessage());
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-            return CommonResult.error(500,e.getMessage());
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = OptionDateBaseException.class)
+    public CommonResult<Object> deleteStudent(StudentVo vo, UserDto userDto) throws OptionDateBaseException {
+        //获取参数
+        List<Integer> studentIdList = vo.getStudentIds();
+        Integer updateBy = userDto.getId();
+        //批量查询
+        Collection<StudentInfo> studentInfos = super.getBaseMapper().selectBatchIds(studentIdList);
+        //判断是否全部都有查出
+        if (studentIdList.size() > studentInfos.size()){
+            return CommonResult.error(500,"有学生已被删除");
         }
+        //循环修改为删除状态
+        for (StudentInfo info:studentInfos) {
+            // 查看该学生是否状态为删除
+            if (info.getDeleted()==1) {
+                return CommonResult.error(500, "【" + info.getStudentNumber() + "】该学生已删除");
+            }
+            //设置为删除状态
+            info.setDeleted(1);
+            //设置更新人
+            info.setUpdateBy(updateBy);
+        }
+        //修改教师信息
+        boolean i = super.updateBatchById(studentInfos);
+        //若修改后进入try-catch中，
+
+        if (i){
+
+            List<Integer> studentUserIds = studentInfos.stream().map(StudentInfo::getUserId).collect(Collectors.toList());
+            List<Integer> studentIds = studentInfos.stream().map(StudentInfo::getId).collect(Collectors.toList());
+
+            /*删除用户信息，若失败则抛异常*/
+            deleteUserInfo(studentUserIds, updateBy);
+
+            LambdaQueryWrapper<InternshipWithStudent> studentLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            studentLambdaQueryWrapper.in(InternshipWithStudent::getRelationStudentId,studentIds)
+                    .eq(InternshipWithStudent::getDeleted,BaseVo.UNDELETE);
+            List<InternshipWithStudent> internshipWithStudents = internshipWithStudentService.list(studentLambdaQueryWrapper);
+            internshipWithStudents.forEach(info -> {
+                info.setDeleted(1);
+                info.setUpdateBy(updateBy);
+            });
+
+            //判断是否需要更新
+            if (internshipWithStudents.size()>0) {
+                boolean updateStudent = internshipWithStudentService.updateBatchById(internshipWithStudents);
+                if (!updateStudent) {
+                    throw new OptionDateBaseException("删除用户异常");
+                }
+            }
+            //返回
+            return CommonResult.success("删除成功",null);
+        }else {
+            throw new OptionDateBaseException("删除用户异常");
+        }
+
+
     }
 
-//    /**
-//     * @param userDto 用户信息
-//     * @param vo 学生vo字段
-//     * @Description: 批量删除学生(管理员)
-//     * @Author: GG
-//     * @Date: 2022/07/01 15:51
-//     */
-//    @Override
-//    public CommonResult<Object> deleteStudentByIds(StudentVo vo, UserDto userDto) {
-//
-//    }
+    /**
+     * @Description: 删除学时用户信息
+     * @Author: LZH
+     * @Date: 2022/7/15 11:02
+     */
+    private void deleteUserInfo(List<Integer> studentUserIds,Integer updateBy)throws OptionDateBaseException{
+        //操作删除用户
+        List<User> users = userService.getBaseMapper().selectBatchIds(studentUserIds);
+        users.forEach(user -> {
+            user.setUpdateBy(updateBy);
+            //设置删除状态
+            user.setDeleted(User.DELETED);
+        });
+        //用户账户信息表
+        QueryWrapper<UserAccount> accountQueryWrapper = new QueryWrapper<>();
+        accountQueryWrapper.in("user_id",studentUserIds).eq("deleted",0);
+        List<UserAccount> userAccounts = userAccountService.list(accountQueryWrapper);
+        userAccounts.forEach(userAccount -> {
+            userAccount.setDeleted(1);
+            userAccount.setUpdateBy(updateBy);
+        });
+
+        /*删除权限*/
+        QueryWrapper<AuthUserRole> authUserRoleQueryWrapper = new QueryWrapper<>();
+        authUserRoleQueryWrapper.in("user_id",studentUserIds).eq("deleted",0);
+        List<AuthUserRole> userRoles = authUserRoleService.list(authUserRoleQueryWrapper);
+        userAccounts.forEach(userRole -> {
+            userRole.setDeleted(1);
+            userRole.setUpdateBy(updateBy);
+        });
+
+        //进行批量修改
+        boolean updateUser = userService.updateBatchById(users);
+        if (!updateUser){
+            throw new OptionDateBaseException("删除用户异常");
+        }
+        boolean updateAccount = userAccountService.updateBatchById(userAccounts);
+        if (!updateAccount){
+            throw new OptionDateBaseException("删除用户异常");
+        }
+        //判断是否需要更新
+        if (userRoles.size()>0) {
+            boolean updateClass = authUserRoleService.updateBatchById(userRoles);
+            if (!updateClass) {
+                throw new OptionDateBaseException("删除用户异常");
+            }
+        }
+    }
 
 
     /**
@@ -524,47 +510,19 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
      */
     @Override
     public CommonResult<Object> displayStudentListPage(StudentVo vo, UserDto userDto) {
-        //分页参数
-        Page<StudentInfo> studentInfoPage=new Page<>(vo.getPage(),vo.getSize());
-        //年级
-        Integer gradeId = vo.getGradeId();
-        //专业
-        Integer majorId = vo.getMajorId();
-        //搜索词
-        String key = vo.getKey();
-        //角色
-        String roleCode = userDto.getUserRoleDto().getRoleCode();
 
-        QueryWrapper<StudentInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("deleted",BaseVo.UNDELETE);
+        List<StudentInfoDto> list = super.getBaseMapper().selectStudentListByBaseVo(vo);
 
-        if(roleCode.equals(AuthRole.SCHOOL_ADMIN)){
-            queryWrapper.eq("school_id",userDto.getSchoolIds());
-        }
-        if(roleCode.equals(AuthRole.DEPARTMENT_ADMIN)){
-            queryWrapper.eq("school_id",userDto.getTeacherInfo().getSchoolId());
-            queryWrapper.eq("department_id",userDto.getDepartmentIds());
-        }
-        if(gradeId != null){
-            queryWrapper.eq("grade_id",gradeId);
-        }
-        if(majorId != null){
-            queryWrapper.eq("major_id",majorId);
-        }
-        if(key != null){
-            queryWrapper.like("name",key);
-        }
+        Integer totalCount = super.getBaseMapper().selectStudentListByBaseVoCount(vo);
 
-        //获取list
-        IPage<StudentInfo> iPage=this.page(studentInfoPage,queryWrapper);
         //放入返回map,定义初始化容量为16
         Map<String,Object> returnMap=new HashMap<>(16);
         //得到的所有数据都放到list键中
-        returnMap.put(BaseVo.LIST,iPage.getRecords());
+        returnMap.put(BaseVo.LIST,list);
         //得到的分出来的页数放到page键中
-        returnMap.put(BaseVo.PAGE,iPage.getPages());
+        returnMap.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),totalCount));
         //得到的查询总数放到total键中
-        returnMap.put(BaseVo.TOTAL,iPage.getTotal());
+        returnMap.put(BaseVo.TOTAL,totalCount);
         //把数据返回给前端
         return CommonResult.success(returnMap);
     }
@@ -589,14 +547,37 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
 
         QueryWrapper<StudentInfo> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("deleted",BaseVo.UNDELETE);
+        //根据权限判断筛选条件
+        switch (roleCode) {
+            case AuthRole.ADMIN:
+                if (vo.getSchoolId() != null) {
+                    queryWrapper.eq("school_id", vo.getSchoolId());
+                }
+                if (vo.getDepartmentId() != null) {
+                    queryWrapper.eq("department_id", vo.getDepartmentId());
+                }
+                break;
+            case AuthRole.SCHOOL_ADMIN:
+                if (vo.getSchoolId() != null) {
+                    queryWrapper.eq("school_id", vo.getSchoolId());
+                } else {
+                    queryWrapper.in("school_id", userDto.getSchoolIds());
+                }
+                if (vo.getDepartmentId() != null) {
+                    queryWrapper.eq("department_id", vo.getDepartmentId());
+                }
+                break;
+            case AuthRole.DEPARTMENT_ADMIN:
+                if (vo.getDepartmentId() != null) {
+                    queryWrapper.eq("department_id", vo.getDepartmentId());
+                } else {
+                    queryWrapper.in("department_id", userDto.getDepartmentIds());
 
-        if(roleCode.equals(AuthRole.SCHOOL_ADMIN)){
-            queryWrapper.eq("school_id",userDto.getSchoolIds());
+                }
+                break;
+            default: break;
         }
-        if(roleCode.equals(AuthRole.DEPARTMENT_ADMIN)){
-            queryWrapper.eq("school_id",userDto.getTeacherInfo().getSchoolId());
-            queryWrapper.eq("department_id",userDto.getDepartmentIds());
-        }
+
         if(gradeId != null){
             queryWrapper.eq("grade_id",gradeId);
         }
@@ -627,7 +608,7 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
      * @Date: 2022/07/04 08:34
      */
     @Override
-    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
+    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = OptionDateBaseException.class)
     public CommonResult<Object> importStudentInfo(UserDto userDto, MultipartFile file) {
         return null;
 //        String roleCode = userDto.getUserRoleDto().getRoleCode();
@@ -875,7 +856,7 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
 //                                        }
 //                                    }
 //                                    if (classId==null){
-//                                        throw new RuntimeException("班级信息异常");
+//                                        throw new OptionDateBaseException("班级信息异常");
 //                                    }
 //
 //                                    //获取参数
@@ -912,7 +893,7 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
 //                                        //获取专业
 //                                        boolean save = majorInfoService.save(majorInfo);
 //                                        if (!save){
-//                                            throw new RuntimeException("专业新增失败");
+//                                            throw new OptionDateBaseException("专业新增失败");
 //                                        }
 //                                        //取出id
 //                                        majorId = majorInfo.getId();
@@ -993,21 +974,21 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
 //                if (userAccounts.size()>0){
 //                    boolean saveAccount = userAccountService.saveBatch(userAccounts,1000);
 //                    if (!saveAccount){
-//                        throw new RuntimeException("导入账号信息失败");
+//                        throw new OptionDateBaseException("导入账号信息失败");
 //                    }
 //                }
 //                //用户角色
 //                if (userRoles.size()>0){
 //                    boolean saveRole = userRoleService.saveBatch(userRoles,1000);
 //                    if (!saveRole){
-//                        throw new RuntimeException("导入角色信息失败");
+//                        throw new OptionDateBaseException("导入角色信息失败");
 //                    }
 //                }
 //                //教师信息
 //                if (studentInfos.size()>0){
 //                    boolean saveTeacher = this.saveBatch(studentInfos,1000);
 //                    if (!saveTeacher){
-//                        throw new RuntimeException("导入学生信息失败");
+//                        throw new OptionDateBaseException("导入学生信息失败");
 //                    }
 //                }
 //
@@ -1019,7 +1000,7 @@ public class StudentInfoServiceImpl extends ServiceImpl<StudentInfoMapper, Stude
 //
 //        }catch (IOException e){
 //            return CommonResult.error(500,e.getMessage());
-//        }catch (RuntimeException e){
+//        }catch (OptionDateBaseException e){
 //            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
 //            log.info(e.getMessage());
 //            return CommonResult.error(500,e.getMessage());

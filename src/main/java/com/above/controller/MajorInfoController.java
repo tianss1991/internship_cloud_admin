@@ -131,7 +131,7 @@ public class MajorInfoController {
      * @Date: 2022/6/23 11:28
      */
     @ApiOperation("获取专业列表")
-    @RequiresRoles(value = {"admin","schoolAdmin", "departmentAdmin", "teacher", "instructorSchool","instructorDepartment"}, logical = Logical.OR)
+    @RequiresRoles(value = {"admin","schoolAdmin", "departmentAdmin", "instructor","adviser","teacher", "student","visitor"}, logical = Logical.OR)
     @GetMapping("getMajorList")
     public CommonResult<Object> getMajorList(HttpServletRequest request, MajorInfoVo majorInfoVo){
         //从session获取user

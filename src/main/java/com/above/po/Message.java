@@ -85,5 +85,10 @@ public class Message implements Serializable {
     @TableField("audit_type")
     private String auditType;
 
+    @ApiModelProperty(value = "关联来源id")
+    @TableField("relation_id")
+    private String relationId;
+
+
 
 }

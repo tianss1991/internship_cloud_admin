@@ -1,9 +1,9 @@
 package com.above.service;
 
 import com.above.dto.UserDto;
+import com.above.exception.OptionDateBaseException;
 import com.above.po.LeaveApplyInfo;
 import com.above.utils.CommonResult;
-import com.above.vo.InternshipApplicationVo;
 import com.above.vo.LeaveApplyInfoVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -37,7 +37,7 @@ public interface LeaveApplyInfoService extends IService<LeaveApplyInfo> {
     /**
      * 辅导员审核请假申请(辅导员)
      * */
-    CommonResult<Object> checkLeaveApplyInfo(LeaveApplyInfoVo vo, UserDto userDto);
+    CommonResult<Object> checkLeaveApplyInfo(LeaveApplyInfoVo vo, UserDto userDto) throws OptionDateBaseException;
 
     /**
      * 通过学生用户id拿到请假单列表(学生)

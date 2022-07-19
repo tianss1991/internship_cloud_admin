@@ -449,7 +449,7 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
                     CommonResult.error(500,"删除失败");
                 }
             }
-            /*删除后判断该教职工是否需要删除领导角色*/
+            /*删除后判断该教师是否需要删除领导角色*/
             QueryWrapper<SchoolTeacherRelation> relationQueryWrapper = new QueryWrapper<>();
             relationQueryWrapper.eq("deleted",BaseVo.UNDELETE).eq("teacher_id",id).eq("relation_type",relationType);
             List<SchoolTeacherRelation> list = schoolTeacherRelationService.list(relationQueryWrapper);
@@ -494,26 +494,26 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
         List<TeacherInfo> teacherInfos = teacherInfoMapper.selectBatchIds(teacherIdList);
         //判断教师是否存在
         if (teacherInfos == null || teacherInfos.size() <= 0){
-            throw new RuntimeException("教职工信息不存在");
+            throw new RuntimeException("教师信息不存在");
         }
         if (teacherIdList.size()!= teacherInfos.size()){
-            throw new RuntimeException("有教职工信息不存在");
+            throw new RuntimeException("有教师信息不存在");
         }
         //批量添加数组
         Collection<SchoolTeacherRelation> teacherRelations = new ArrayList<>();
         Collection<AuthUserRole> roles = new ArrayList<>();
-        //循环添加教职工为领导
+        //循环添加教师为领导
         for (TeacherInfo info:teacherInfos) {
-            // 查看该教职工是否状态为删除
+            // 查看该教师是否状态为删除
             if (info.getDeleted()==1) {
-                throw new RuntimeException("【" + info.getTeacherName() + "】该教职工信息不存在");
+                throw new RuntimeException("【" + info.getTeacherName() + "】该教师信息不存在");
             }
             if (!info.getSchoolId().equals(schoolId)) {
-                throw new RuntimeException("【" + info.getTeacherName() + "】非本校教职工");
+                throw new RuntimeException("【" + info.getTeacherName() + "】非本校教师");
             }
             //获取老师id
             Integer id = info.getId();
-            //查询该教职工已经绑定该学校
+            //查询该教师已经绑定该学校
             QueryWrapper<SchoolTeacherRelation> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("school_id",schoolId).eq("relation_type",relationType).eq("teacher_id",id).eq("deleted",BaseVo.UNDELETE);
             int count = schoolTeacherRelationService.count(queryWrapper);
@@ -685,7 +685,7 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
                 //批量插入集合
                 //用户权限
                 Collection<AuthUserRole> userRoles = new HashSet<>();
-                //教职工关联
+                //教师关联
                 Collection<SchoolTeacherRelation> schoolTeacherRelations = new HashSet<>();
                 Collection<DepartmentTeacherRelation> departmentTeacherRelations = new HashSet<>();
                 Collection<ClassTeacherRelation> classTeacherRelations = new ArrayList<>();
@@ -732,7 +732,7 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
                         return CommonResult.error(500,"请检查学校信息");
                     }
 
-                    //判断三种教职工是否存在
+                    //判断三种教师是否存在
                     //判断领导
                     if (!StringUtils.isBlank(schoolLeaderNum)||!StringUtils.isBlank(schoolLeader)){
                         if (StringUtils.isBlank(schoolLeader)||StringUtils.isBlank(schoolLeaderNum)){
@@ -813,7 +813,7 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
                                         classLeaderInfo = info;
                                         isExist = true;
                                     }else {
-                                        return CommonResult.error(500,"教职工【"+classLeader+"】与工号【"+classLeaderNum+"】不符");
+                                        return CommonResult.error(500,"教师【"+classLeader+"】与工号【"+classLeaderNum+"】不符");
                                     }
                                     break;
                                 }
@@ -872,7 +872,7 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
                             SchoolTeacherRelation schoolTeacherRelation = new SchoolTeacherRelation();
                             //关联学校id
                             schoolTeacherRelation.setSchoolId(schoolId);
-                            //关联教职工id
+                            //关联教师id
                             schoolTeacherRelation.setTeacherId(schoolLeaderInfo.getId());
                             schoolTeacherRelation.setRelationType(1);
                             schoolTeacherRelation.setCreateBy(createBy);
@@ -944,7 +944,7 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
                                 DepartmentTeacherRelation departmentTeacherRelation = new DepartmentTeacherRelation();
                                 //关联学校id
                                 departmentTeacherRelation.setDepartmentId(departmentId);
-                                //关联教职工id
+                                //关联教师id
                                 departmentTeacherRelation.setTeacherId(departmentLeaderInfo.getId());
                                 departmentTeacherRelation.setRelationType(1);
                                 departmentTeacherRelation.setCreateBy(createBy);
@@ -1104,7 +1104,7 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
                                 ClassTeacherRelation classTeacherRelation = new ClassTeacherRelation();
                                 //关联学校id
                                 classTeacherRelation.setClassId(classId);
-                                //关联教职工id
+                                //关联教师id
                                 classTeacherRelation.setTeacherId(classLeaderInfo.getId());
                                 classTeacherRelation.setRelationType(1);
                                 classTeacherRelation.setCreateBy(createBy);
@@ -1145,7 +1145,7 @@ public class SchoolInfoServiceImpl extends ServiceImpl<SchoolInfoMapper, SchoolI
                                 ClassTeacherRelation classTeacherRelation = new ClassTeacherRelation();
                                 //关联学校id
                                 classTeacherRelation.setClassId(classId);
-                                //关联教职工id
+                                //关联教师id
                                 classTeacherRelation.setRelationType(2);
                                 classTeacherRelation.setCreateBy(createBy);
                                 classTeacherRelation.setTeacherName(classTeacher);

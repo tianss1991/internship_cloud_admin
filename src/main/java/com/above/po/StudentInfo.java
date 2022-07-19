@@ -108,8 +108,8 @@ public class StudentInfo implements Serializable {
     /**
      * @Description: 用于业务中关联使用
      */
-    @ApiModelProperty(value = "实习计划id")
+    @ApiModelProperty(value = "实习计划")
     @TableField(exist = false)
-    private Integer planId;
+    private InternshipPlanInfo planInfo;
 
 }

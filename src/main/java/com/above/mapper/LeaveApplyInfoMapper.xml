@@ -17,8 +17,10 @@
         LEFT JOIN student_info s on s.user_id = lai.create_by
         and s.deleted = 0
         LEFT JOIN internship_info_by_student iibs on iibs. relation_student_id = s.id and iibs.deleted = 0
+        LEFT JOIN internship_plan_info ipi ON iibs.relation_plan_id = ipi.id AND ipi.deleted = 0
         LEFT JOIN internship_with_teacher iwt on iwt.relation_plan_id = iibs.relation_plan_id and iwt.deleted = 0
         LEFT JOIN teacher_info t on t.id = iwt.teacher_id and  t.deleted = 0
+        LEFT JOIN major_info mi ON mi.id = ipi.major_id AND mi.deleted = 0
         <where>
             <if test=" isCheck != null">
                 <if test="isCheck == 0">
@@ -37,6 +39,9 @@
             <if test="planId != null">
                 and iibs.relation_plan_id = #{planId}
                 and iwt.relation_plan_id = #{planId}
+            </if>
+            <if test="majorId != null">
+                and mi.id = #{majorId}
             </if>
         </where>
         order by lai.create_time desc

@@ -30,10 +30,10 @@ public class InternshipWithTeacher implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty(value = "编号")
-    @TableField("id")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty(value = "教职工编号;关联teacher_info id")
+    @ApiModelProperty(value = "教师编号;关联teacher_info id")
     @TableField("teacher_id")
     private Integer teacherId;
 

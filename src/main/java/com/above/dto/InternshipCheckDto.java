@@ -52,6 +52,9 @@ public class InternshipCheckDto {
     @ApiModelProperty(value = "免实习申请原因")
     private String reason;
 
+    @ApiModelProperty(value = "申请类型")
+    private String type;
+
 
 
 }

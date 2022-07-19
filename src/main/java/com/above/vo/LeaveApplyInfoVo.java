@@ -73,6 +73,9 @@ public class LeaveApplyInfoVo{
     @ApiModelProperty(value = "学生id")
     private Integer studentId;
 
+    @ApiModelProperty(value = "专业id")
+    private Integer majorId;
+
     @ApiModelProperty(value = "页数")
     private Integer page = 1;
 

@@ -23,18 +23,18 @@ import java.net.URLEncoder;
 public class ExcelTemplateController {
 
     /**
-     * @Description: 获取教职工导入模板文件
+     * @Description: 获取教师导入模板文件
      * @Author: LZH
      * @Date: 2022/2/23 17:35
      */
-    @ApiOperation("获取教职工导入模板文件")
+    @ApiOperation("获取教师导入模板文件")
     @GetMapping("/downloadTeacherTemplate")
     public void downloadTeacherTemplate(HttpServletResponse response) throws IOException {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
-        String fileName = URLEncoder.encode("教职工导入模板", "UTF-8").replaceAll("\\+", "%20");
+        String fileName = URLEncoder.encode("教师导入模板", "UTF-8").replaceAll("\\+", "%20");
         response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-        InputStream inputStream = this.getClass().getResourceAsStream("/template/教职工导入模板.xlsx");
+        InputStream inputStream = this.getClass().getResourceAsStream("/template/教师导入模板.xlsx");
         byte[] byteArray = IoUtils.toByteArray(inputStream);
         inputStream.close();
         response.getOutputStream().write(byteArray);

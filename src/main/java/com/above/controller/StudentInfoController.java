@@ -2,10 +2,11 @@ package com.above.controller;
 
 
 import com.above.dto.UserDto;
+import com.above.exception.OptionDateBaseException;
+import com.above.po.AuthRole;
 import com.above.service.StudentInfoService;
 import com.above.utils.CommonResult;
 import com.above.utils.MyStringUtils;
-import com.above.vo.InternshipApplicationVo;
 import com.above.vo.StudentVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -13,7 +14,9 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +34,9 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping("/studentInfo")
 public class StudentInfoController {
 
+    @Autowired
+    private StudentInfoService studentInfoService;
+
     /**
      * @Description: 添加学生接口
      * @Author: GG
@@ -39,6 +45,7 @@ public class StudentInfoController {
     @ApiOperation("添加学生接口")
     @RequiresRoles(value = {"admin","schoolAdmin", "departmentAdmin", "instructor","student"}, logical = Logical.OR)
     @PostMapping("addStudent")
+    @Transactional(rollbackFor = OptionDateBaseException.class,propagation = Propagation.REQUIRED)
     public CommonResult<Object> addStudent(HttpServletRequest request, @RequestBody StudentVo studentVo){
         //从session获取user
         UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
@@ -67,8 +74,9 @@ public class StudentInfoController {
 
         try {
             return studentInfoService.addStudent(studentVo,userDto);
-        } catch (Exception e) {
-            return CommonResult.error(500, "添加异常");
+        } catch (OptionDateBaseException e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -94,19 +102,20 @@ public class StudentInfoController {
 
         try {
             return studentInfoService.modifyStudent(studentVo,userDto);
-        } catch (Exception e) {
+        } catch (OptionDateBaseException e) {
             return CommonResult.error(500, "修改异常");
         }
     }
 
     /**
      * @Description: 删除学生
-     * @Author: LZH
+     * @Author: LZH (propagation = Propagation.REQUIRED,rollbackFor = RuntimeOptionDateBaseException.class)
      * @Date: 2022/1/11 11:40
      */
     @ApiOperation("删除学生")
     @RequiresRoles(value = {"admin","schoolAdmin", "departmentAdmin", "instructor","student"}, logical = Logical.OR)
     @PostMapping("deleteStudent")
+    @Transactional(rollbackFor = OptionDateBaseException.class,propagation = Propagation.REQUIRED)
     public CommonResult<Object> deleteStudent(HttpServletRequest request,@RequestBody StudentVo studentVo){
         //从session获取user
         UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
@@ -115,27 +124,29 @@ public class StudentInfoController {
         if (studentVo == null) {
             return CommonResult.error(500,"缺少参数");
         }
-        if (studentVo.getStudentIds() == null && studentVo.getStudentIds().size()==0) {
+        if (studentVo.getStudentIds() == null ||studentVo.getStudentIds().size()==0) {
             return CommonResult.error(500,"缺少学生id");
         }
 
+
         try {
-            return studentInfoService.deleteStudent(studentVo,userDto);
-        } catch (Exception e) {
+            return studentInfoService.deleteStudent(studentVo, userDto);
+        } catch (OptionDateBaseException e) {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return CommonResult.error(500, "删除异常");
         }
+
     }
 
-    @Autowired
-    private StudentInfoService studentInfoService;
+
 
     /**
-     * @Description:显示学生列表(管理员)
+     * @Description: 显示学生列表(管理员)
      * @Author: GG
      * @Date: 2022/07/01 11:27
      */
     @ApiOperation("显示学生列表(管理员)")
-    @RequiresRoles(value = {"student"}, logical = Logical.OR)
+    @RequiresRoles(value = {"admin","schoolAdmin", "departmentAdmin", "instructor","student"}, logical = Logical.OR)
     @GetMapping("displayStudentList")
     public CommonResult<Object> displayStudentList(HttpServletRequest request, StudentVo vo){
         //从session获取user
@@ -150,6 +161,15 @@ public class StudentInfoController {
         if (vo.getSize() == null){
             return CommonResult.error(500,"缺少分页数量参数");
         }
+        String roleCode = userDto.getUserRoleDto().getRoleCode();
+        if (roleCode.equals(AuthRole.SCHOOL_ADMIN)){
+            vo.setSchoolIdList(userDto.getSchoolIds());
+        }else if (roleCode.equals(AuthRole.DEPARTMENT_ADMIN)){
+            vo.setDepartmentIdList(userDto.getDepartmentIds());
+        }else if (roleCode.equals(AuthRole.INSTRUCTOR)){
+            vo.setClassIdList(userDto.getClassIds());
+        }
+
         /*若page为0则默认不分页*/
         if (vo.getPage()==0){
             //不分页
