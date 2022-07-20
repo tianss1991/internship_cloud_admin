@@ -23,7 +23,9 @@ public interface PayrollMapper extends BaseMapper<Payroll> {
     //pc端查看工资单
     List<PayrollDto> getPayroll(PayrollVo vo);
     //工资单总数
-    int countPayroll(PayrollVo vo);
+    Integer countPayroll(PayrollVo vo);
     //学生查看工资单列表
     List<PayrollDto> getStudentPayrollList(PayrollVo vo);
+    //辅导员查看学生工资单总数
+    Integer getInstructorPayrollListCount(PayrollVo vo);
 }

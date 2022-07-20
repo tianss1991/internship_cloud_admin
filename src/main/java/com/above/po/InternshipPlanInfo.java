@@ -1,5 +1,9 @@
 package com.above.po;
 
+import com.above.dto.UserDto;
+import com.above.utils.CommonResult;
+import com.above.vo.InternshipPlanInfoVo;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.util.Date;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -7,6 +11,9 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -19,7 +26,7 @@ import lombok.experimental.Accessors;
  * </p>
  *
  * @author mp
- * @since 2022-07-15
+ * @since 2022-07-19
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
@@ -161,5 +168,78 @@ public class InternshipPlanInfo implements Serializable {
     @TableField("adviser_size")
     private Integer adviserSize;
 
+    @ApiModelProperty(value = "额外字段")
+    @TableField("extra")
+    private String extra;
+
+    @ApiModelProperty(value = "实习配置（JSON格式）")
+    @TableField("config")
+    private String config;
+
+    public static InternshipPlanInfo transform(UserDto userDto, InternshipPlanInfoVo vo) {
+        InternshipPlanInfo internshipPlanInfo = new InternshipPlanInfo();
+        Integer schoolId = 0;
+        Integer departmentId = 0;
+        //获取参数
+        if(userDto.getUserRoleDto().getRoleCode().equals("admin")){
+            schoolId = vo.getSchoolId();
+            departmentId = vo.getDepartmentId();
+        }else if(userDto.getUserRoleDto().getRoleCode().equals("schoolAdmin")){
+            schoolId = userDto.getTeacherInfo().getSchoolId();
+            departmentId = vo.getDepartmentId();
+        }else if(userDto.getUserRoleDto().getRoleCode().equals("departmentAdmin")){
+            schoolId = userDto.getTeacherInfo().getSchoolId();
+            departmentId = userDto.getTeacherInfo().getDepartmentId();
+        }
+        //获取参数
+        String planTitle = vo.getPlanTitle();
+        Integer gradeId = vo.getGradeId();
+        Integer majorId = vo.getMajorId();
+        String gradation = vo.getGradation();
+        Date startTime = vo.getStartTime();
+        Date endTime = vo.getEndTime();
+        String purpose = vo.getPurpose();
+        String required = vo.getRequired();
+        String content = vo.getContent();
+        Integer signSet = vo.getSignSet();
+        Integer dailyCount = vo.getDailyCount();
+        Integer dailyWordCount = vo.getDailyWordCount();
+        Integer weekCount = vo.getWeekCount();
+        Integer weekWordCount = vo.getWeekWordCount();
+        Integer monthCount = vo.getMonthCount();
+        Integer monthWordCount = vo.getMonthWordCount();
+        Integer summarizeCount = vo.getSummarizeCount();
+        Integer summarizeWordCount = vo.getSummarizeWordCount();
+        Integer signTimes = vo.getSignTimes();
+        Integer isMustImage = vo.getIsMustImage();
+        Map<String,Object> map = new HashMap<>();
+        map.put("isMustImage",isMustImage);
+
+        //存入数据
+        internshipPlanInfo.setSchoolId(schoolId);
+        internshipPlanInfo.setDepartmentId(departmentId);
+        internshipPlanInfo.setPlanTitle(planTitle);
+        internshipPlanInfo.setGradeId(gradeId);
+        internshipPlanInfo.setMajorId(majorId);
+        internshipPlanInfo.setGradation(gradation);
+        internshipPlanInfo.setStartTime(startTime);
+        internshipPlanInfo.setEndTime(endTime);
+        internshipPlanInfo.setPurpose(purpose);
+        internshipPlanInfo.setRequired(required);
+        internshipPlanInfo.setContent(content);
+        internshipPlanInfo.setSignSet(signSet);
+        internshipPlanInfo.setDailyCount(dailyCount);
+        internshipPlanInfo.setDailyWordCount(dailyWordCount);
+        internshipPlanInfo.setWeekCount(weekCount);
+        internshipPlanInfo.setWeekWordCount(weekWordCount);
+        internshipPlanInfo.setMonthCount(monthCount);
+        internshipPlanInfo.setMonthWordCount(monthWordCount);
+        internshipPlanInfo.setSummarizeCount(summarizeCount);
+        internshipPlanInfo.setSummarizeWordCount(summarizeWordCount);
+        internshipPlanInfo.setSignTimes(signTimes);
+        internshipPlanInfo.setConfig(JSONObject.toJSONString(map));
+        internshipPlanInfo.setStatus(1);
+        return internshipPlanInfo;
+    }
 
 }

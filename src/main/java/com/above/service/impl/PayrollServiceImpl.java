@@ -132,27 +132,30 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
     public CommonResult<Object> getInstructorPayrollList(UserDto userDto, PayrollVo vo) {
         Integer userType = userDto.getUserType();
         String number = userDto.getAccountNumber();
-        //获取辅导员id
-        QueryWrapper<TeacherInfo> qw = new QueryWrapper<>();
-        qw.eq("work_number",number);
-        TeacherInfo teacherInfo = teacherInfoMapper.selectOne(qw);
-        if (teacherInfo==null){
-            return CommonResult.error(500,"该辅导员不存在");
+        Integer teacherId = userDto.getTeacherInfo().getUserId();
+
+        if (teacherId==null){
+            return CommonResult.error(500,"辅导员id为空");
         }
-        Integer teacherId = teacherInfo.getUserId();
+
         vo.setTeacherId(teacherId);
 
-        HashMap<String, Object> hashMap = new HashMap<>(16);
-        List<PayrollDto> instructorPayrollList = payrollMapper.getInstructorPayrollList(vo);
-        hashMap.put(BaseVo.LIST,instructorPayrollList);
+        Map<String, Object> returnMap = new HashMap<>(16);
+        List<PayrollDto> list = payrollMapper.getInstructorPayrollList(vo);
+        Integer totalCount = payrollMapper.getInstructorPayrollListCount(vo);
+        //总页数
+        returnMap.put(BaseVo.LIST, list);
+        //总数
+        returnMap.put(BaseVo.TOTAL, totalCount);
+        //返回数据
+        returnMap.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),totalCount));
 
-        return CommonResult.success(hashMap);
+        return CommonResult.success(returnMap);
     }
 
     //查询工资单详情
     @Override
     public CommonResult<Object> getPayrollDetail(UserDto userDto, PayrollVo vo) {
-       //工资单id
         Integer id = vo.getId();
 
         if (id==null || id==0){
@@ -231,22 +234,21 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
             vo.setDateTime(dateTime);
         }
 
-        Long page = vo.getPage();
+       /* Long page = vo.getPage();
         if (vo.getPage() != null && vo.getPage() != 0) {
             vo.setPage((vo.getPage() - 1) * vo.getSize());
         }
-
         List<PayrollDto> payrollList = payrollMapper.getPayroll(vo);
 
-        int total = this.payrollMapper.countPayroll(vo);
-
+        Integer total = this.payrollMapper.countPayroll(vo);
+*/
         Map<String, Object> returnMap = new HashMap<>(16);
 
-        returnMap.put("total", total);
+       /* returnMap.put("total", total);
 
         returnMap.put("list", payrollList.size() == 0 ? new ArrayList<>() : payrollList);
 
-        returnMap.put("pages", (page == null || page == 0) ? 1 : (total + vo.getSize() - 1) / vo.getSize());
+        returnMap.put("pages", (page == null || page == 0) ? 1 : (total + vo.getSize() - 1) / vo.getSize());*/
 
         return CommonResult.success(returnMap);
     }

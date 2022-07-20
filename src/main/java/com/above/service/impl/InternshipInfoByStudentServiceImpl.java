@@ -4,11 +4,8 @@ import com.above.dto.InternshipApplyInfoDto;
 import com.above.dto.InternshipCheckDto;
 import com.above.dto.InternshipInfoFillDto;
 import com.above.dto.UserDto;
-import com.above.po.Area;
-import com.above.po.InternshipInfoByStudent;
+import com.above.po.*;
 import com.above.dao.InternshipInfoByStudentMapper;
-import com.above.po.InternshipInfoByStudentLog;
-import com.above.po.StudentInfo;
 import com.above.service.AreaService;
 import com.above.service.InternshipInfoByStudentLogService;
 import com.above.service.InternshipInfoByStudentService;
@@ -17,8 +14,11 @@ import com.above.utils.CommonResult;
 import com.above.vo.BaseVo;
 import com.above.vo.InternshipApplicationVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.api.R;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.log4j.PatternLayout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -293,13 +293,20 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
         Integer relationStudentId = userDto.getStudentInfo().getId();
         vo.setPlanId(relationPlanId);
         vo.setRelationStudentId(relationStudentId);
+        //设置分页参数
+        Page<InternshipInfoByStudent> page = new Page<>(vo.getPage(), vo.getSize());
         List<InternshipInfoByStudent> list = null;
         Map<String,Object> map = new HashMap<>();
         QueryWrapper<InternshipInfoByStudent> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("deleted",BaseVo.UNDELETE).eq("relation_plan_id",relationPlanId).eq("relation_student_id",relationStudentId)
         .in("internship_type",1,2);
-        list = this.list(queryWrapper);
+        IPage<InternshipInfoByStudent> iPage = super.page(page, queryWrapper);
+        list = iPage.getRecords();
         map.put(BaseVo.LIST,list);
+        //总页数
+        map.put(BaseVo.PAGE,iPage.getPages());
+        //总数
+        map.put(BaseVo.TOTAL,iPage.getTotal());
         return CommonResult.success(map);
     }
 
@@ -924,15 +931,21 @@ public class InternshipInfoByStudentServiceImpl extends ServiceImpl<InternshipIn
     public CommonResult<Object> employmentReportedDisplayList(InternshipApplicationVo vo, UserDto userDto) {
         Integer relationPlanId = vo.getRelationPlanId();
         Integer relationStudentId = userDto.getStudentInfo().getId();
+        //设置分页参数
+        Page<InternshipInfoByStudent> page = new Page<>(vo.getPage(), vo.getSize());
         Map<String,Object> map = new HashMap<>();
         QueryWrapper<InternshipInfoByStudent> queryWrapper = new QueryWrapper<>();
         //internship_type字段中1为实习申请
         queryWrapper.eq("deleted",0).eq("relation_plan_id",relationPlanId).eq("relation_student_id",relationStudentId)
                 .eq("internship_type",3);
-        List<InternshipInfoByStudent> list = this.list(queryWrapper);
-        if(list.size()>0){
-            map.put("list",list);
-        }
+        IPage<InternshipInfoByStudent> iPage = super.page(page, queryWrapper);
+
+        List<InternshipInfoByStudent> list = iPage.getRecords();
+        map.put(BaseVo.LIST,list);
+        //总页数
+        map.put(BaseVo.PAGE,iPage.getPages());
+        //总数
+        map.put(BaseVo.TOTAL,iPage.getTotal());
         return CommonResult.success(map);
     }
 

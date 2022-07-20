@@ -3,7 +3,9 @@
 <mapper namespace="com.above.dao.PayrollMapper">
 
     <select id="getInstructorPayrollList" resultType="com.above.dto.PayrollDto">
-       SELECT
+       SELECT DISTINCT
+       p.id,
+       p.date_time AS dateTime,
        si.student_name AS studentName,
        iibs.company_name AS companyName,
        iibs.job_name AS jobName,
@@ -23,17 +25,19 @@
        AND
        ipi.deleted=0
        <if test="majorId!=null and majorId>0">
-           AND ipi.major_id=#{majorId}
+          AND ipi.major_id=#{majorId}
        </if>
        <if test="createTime!=null">
-           AND p.create_time&lt;#{createTime}
+          AND p.create_time&lt;#{createTime}
        </if>
        <if test="studentName != null and studentName != ''">
-           AND si.name like concat ('%',#{studentName},'%')
+          AND si.name like concat ('%',#{studentName},'%')
        </if>
        <if test="teacherId !=null" >
-           AND iwt.teacher_id =#{teacherId}
+          AND iwt.teacher_id =#{teacherId}
        </if>
+       ORDER BY p.create_time DESC
+       limit #{start},#{size}
     </select>
 
    <select id="getPayroll" resultType="com.above.dto.PayrollDto">
@@ -105,6 +109,34 @@
       AND iibs.deleted=0
       <if test="studentId!=null || studentId!=0" >
          AND p.student_id=#{studentId}
+      </if>
+   </select>
+   <select id="getInstructorPayrollListCount" resultType="java.lang.Integer">
+      SELECT
+      COUNT(DISTINCT p.id)
+      FROM
+      `internship_info_by_student` AS iibs
+      LEFT JOIN `internship_with_teacher` iwt on iibs.relation_plan_id=iwt.relation_plan_id
+      LEFT JOIN `student_info` si on iibs.relation_student_id=si.id
+      LEFT JOIN `payroll` p on iibs.relation_student_id = p.student_id
+      LEFT JOIN `internship_plan_info` ipi on iibs.relation_plan_id=ipi.id
+      WHERE
+      p.deleted=0
+      AND
+      iibs.deleted=0
+      AND
+      ipi.deleted=0
+      <if test="majorId!=null and majorId>0">
+         AND ipi.major_id=#{majorId}
+      </if>
+      <if test="createTime!=null">
+         AND p.create_time&lt;#{createTime}
+      </if>
+      <if test="studentName != null and studentName != ''">
+         AND si.name like concat ('%',#{studentName},'%')
+      </if>
+      <if test="teacherId !=null" >
+         AND iwt.teacher_id =#{teacherId}
       </if>
    </select>
 

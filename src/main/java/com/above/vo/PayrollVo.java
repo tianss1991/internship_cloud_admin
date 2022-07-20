@@ -43,10 +43,28 @@ public class PayrollVo extends Payroll {
     @ApiModelProperty("学生名字")
     private String studentName;
 
-    @ApiModelProperty("当前页")
-    private Long page;
+    @ApiModelProperty(value = "页数")
+    private Integer page = 1;
 
-    @ApiModelProperty("当前页每页多少条")
-    private Long size;
+    @ApiModelProperty(value = "每页个数")
+    private Integer size = 10;
+
+    private Integer start;
+
+    public Integer getStart() {
+        if (page != null && size != null && page != 0) {
+            start = (this.page - 1) * size;
+        }
+        return start;
+    }
+
+
+    public void setStart(Integer start) {
+        this.start = start;
+    }
+
+    public static Integer calculationPages(Integer size, Integer totalCount) {
+        return (totalCount + size - 1) / size;
+    }
 
 }

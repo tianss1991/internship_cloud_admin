@@ -63,8 +63,8 @@ ObsConfig:
 #文件存储配置
 ServerConfig:
   #本地文件保存地址
-  localSaveUrl: /anbo/internship_cloud/file
-  #  localSaveUrl: D:/test/
+#  localSaveUrl: /anbo/internship_cloud/file
+  localSaveUrl: D:/test/
   #基础接口请求地址路径
   apiBaseUrl: http://192.168.5.160:8084/internship/
 

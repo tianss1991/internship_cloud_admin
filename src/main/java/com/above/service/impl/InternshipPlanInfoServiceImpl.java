@@ -9,6 +9,8 @@ import com.above.service.*;
 import com.above.utils.CommonResult;
 import com.above.vo.BaseVo;
 import com.above.vo.InternshipPlanInfoVo;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,103 +48,36 @@ public class InternshipPlanInfoServiceImpl extends ServiceImpl<InternshipPlanInf
     @Override
     @Transactional(propagation = Propagation.REQUIRED,rollbackFor = RuntimeException.class)
     public CommonResult<Object> addandmodifyInternshipPlanInfo(InternshipPlanInfoVo vo, UserDto userDto) {
-        Integer schoolId = 0;
-        Integer departmentId = 0;
-        //获取参数
-        if(userDto.getUserRoleDto().getRoleCode().equals("admin")){
-            schoolId = vo.getSchoolId();
-            departmentId = vo.getDepartmentId();
-        }else if(userDto.getUserRoleDto().getRoleCode().equals("schoolAdmin")){
-            schoolId = userDto.getTeacherInfo().getSchoolId();
-            departmentId = vo.getDepartmentId();
-        }else if(userDto.getUserRoleDto().getRoleCode().equals("departmentAdmin")){
-            schoolId = userDto.getTeacherInfo().getSchoolId();
-            departmentId = userDto.getTeacherInfo().getDepartmentId();
-        }
         Integer id = userDto.getId();
-        String planTitle = vo.getPlanTitle();
-        Integer gradeId = vo.getGradeId();
-        Integer majorId = vo.getMajorId();
-        String gradation = vo.getGradation();
-        Date startTime = vo.getStartTime();
-        Date endTime = vo.getEndTime();
-        String purpose = vo.getPurpose();
-        String required = vo.getRequired();
-        String content = vo.getContent();
-        Integer signSet = vo.getSignSet();
-        Integer dailyCount = vo.getDailyCount();
-        Integer dailyWordCount = vo.getDailyWordCount();
-        Integer weekCount = vo.getWeekCount();
-        Integer weekWordCount = vo.getWeekWordCount();
-        Integer monthCount = vo.getMonthCount();
-        Integer monthWordCount = vo.getMonthWordCount();
-        Integer summarizeCount = vo.getSummarizeCount();
-        Integer summarizeWordCount = vo.getSummarizeWordCount();
-        Integer signTimes = vo.getSignTimes();
-
-        //判断专业和年级是否存在
-        MajorInfo majorInfo = majorInfoService.getById(majorId);
-        if(majorInfo == null){
-            return CommonResult.error(500,"专业不存在");
-        }
-        GradeInfo gradeInfo = gradeInfoService.getById(gradeId);
-        if(gradeInfo == null){
-            return CommonResult.error(500,"年级不存在");
-        }
-
-        //新建对象
-        InternshipPlanInfo internshipPlanInfo = new InternshipPlanInfo();
-        //存入数据
-        internshipPlanInfo.setSchoolId(schoolId);
-        internshipPlanInfo.setDepartmentId(departmentId);
-        internshipPlanInfo.setPlanTitle(planTitle);
-        internshipPlanInfo.setGradeId(gradeId);
-        internshipPlanInfo.setMajorId(majorId);
-        internshipPlanInfo.setGradation(gradation);
-        internshipPlanInfo.setStartTime(startTime);
-        internshipPlanInfo.setEndTime(endTime);
-        internshipPlanInfo.setPurpose(purpose);
-        internshipPlanInfo.setRequired(required);
-        internshipPlanInfo.setContent(content);
-        internshipPlanInfo.setSignSet(signSet);
-        internshipPlanInfo.setDailyCount(dailyCount);
-        internshipPlanInfo.setDailyWordCount(dailyWordCount);
-        internshipPlanInfo.setWeekCount(weekCount);
-        internshipPlanInfo.setWeekWordCount(weekWordCount);
-        internshipPlanInfo.setMonthCount(monthCount);
-        internshipPlanInfo.setMonthWordCount(monthWordCount);
-        internshipPlanInfo.setSummarizeCount(summarizeCount);
-        internshipPlanInfo.setSummarizeWordCount(summarizeWordCount);
-        internshipPlanInfo.setSignTimes(signTimes);
-        internshipPlanInfo.setStatus(1);
+        InternshipPlanInfo internshipPlanInfo = InternshipPlanInfo.transform(userDto, vo);
         //查询是否已经存在实习计划
         QueryWrapper<InternshipPlanInfo> queryWrapper = new QueryWrapper();
         queryWrapper.eq("deleted", BaseVo.UNDELETE)
-                .eq("school_id",schoolId)
-                .eq("department_id",departmentId)
-                .eq("grade_id",gradeId)
-                .eq("major_id",majorId)
-                .le("start_time",startTime)
+                .eq("school_id",internshipPlanInfo.getSchoolId())
+                .eq("department_id",internshipPlanInfo.getDepartmentId())
+                .eq("grade_id",internshipPlanInfo.getGradeId())
+                .eq("major_id",internshipPlanInfo.getMajorId())
+                .le("start_time",internshipPlanInfo.getStartTime())
                 .in("status",1,3)
-                .ge("end_time",startTime);
+                .ge("end_time",internshipPlanInfo.getStartTime());
         queryWrapper.or()
-                .le("start_time",endTime)
-                .ge("end_time",endTime)
+                .le("start_time",internshipPlanInfo.getEndTime())
+                .ge("end_time",internshipPlanInfo.getEndTime())
                 .eq("deleted", BaseVo.UNDELETE)
-                .eq("school_id",schoolId)
-                .eq("department_id",departmentId)
-                .eq("grade_id",gradeId)
+                .eq("school_id",internshipPlanInfo.getSchoolId())
+                .eq("department_id",internshipPlanInfo.getDepartmentId())
+                .eq("grade_id",internshipPlanInfo.getGradeId())
                 .in("status",1,3)
-                .eq("major_id",majorId);
+                .eq("major_id",internshipPlanInfo.getMajorId());
         queryWrapper.or()
-                .ge("start_time",startTime)
-                .le("end_time",endTime)
+                .le("start_time",internshipPlanInfo.getStartTime())
+                .ge("end_time",internshipPlanInfo.getEndTime())
                 .eq("deleted", BaseVo.UNDELETE)
-                . eq("school_id",schoolId)
-                .eq("department_id",departmentId)
-                .eq("grade_id",gradeId)
+                .eq("school_id",internshipPlanInfo.getSchoolId())
+                .eq("department_id",internshipPlanInfo.getDepartmentId())
+                .eq("grade_id",internshipPlanInfo.getGradeId())
                 .in("status",1,3)
-                .eq("major_id",majorId);
+                .eq("major_id",internshipPlanInfo.getMajorId());
         InternshipPlanInfo planInfo = this.getOne(queryWrapper);
         if(planInfo != null){
             return CommonResult.error(500,"当前时间段已存在实习申请，无法重复申请");

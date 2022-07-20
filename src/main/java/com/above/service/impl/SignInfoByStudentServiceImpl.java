@@ -43,8 +43,7 @@ public class SignInfoByStudentServiceImpl extends ServiceImpl<SignInfoByStudentM
     /**
      * 默认打卡距离
      */
-    private static final BigDecimal DEFAULT_DISTANT = new BigDecimal("300");
-
+    private static final BigDecimal DEFAULT_DISTANT = new BigDecimal("100");
 
     @Autowired
     private InternshipPlanInfoService planInfoService;
@@ -170,7 +169,7 @@ public class SignInfoByStudentServiceImpl extends ServiceImpl<SignInfoByStudentM
         //查询
         List<SignAndApplyDto> list = super.baseMapper.getSignWithApplyIdListByDate(signInfoVo);
         //1-上班打卡 2-下班打卡
-        int flag = 1;
+        int flag = 2;
         //循环遍历，查看当前是什么类型打卡
         for (SignAndApplyDto info:list) {
             //获取第一条未打卡记录
@@ -239,7 +238,7 @@ public class SignInfoByStudentServiceImpl extends ServiceImpl<SignInfoByStudentM
         Map<String, Object> infoMap = (HashMap<String, Object>) objectMap.get("returnMap");
 
         //封装返回对象
-        Map<String, Object> returnMap = getReturnMap(dateList, infoMap);
+        List<Map<String, Object>> returnMap = getReturnMap(dateList, infoMap);
 
         return CommonResult.success(returnMap);
     }
@@ -334,8 +333,8 @@ public class SignInfoByStudentServiceImpl extends ServiceImpl<SignInfoByStudentM
 
         signInfoByStudent.setIsSign(1).setSignStatus(SignInfoByStudent.NORMAL).setSignTime(signInfoVo.getSignDateTime()).setSignAddress(signInfoVo.getAddress()).setUpdateBy(userDto.getId());
         //图片
-        if (signInfoVo.getUrlList() != null){
-            signInfoByStudent.setSignImg(signInfoVo.getUrlList());
+        if (signInfoVo.getImgUrl() != null){
+            signInfoByStudent.setSignImg(signInfoVo.getImgUrl());
         }
         //备注
         if (signInfoVo.getRemark() != null){
@@ -491,11 +490,14 @@ public class SignInfoByStudentServiceImpl extends ServiceImpl<SignInfoByStudentM
      * @Author: LZH
      * @Date: 2022/7/12 12:04
      */
-    private Map<String, Object> getReturnMap(List<String> dateList,Map<String, Object> infoMap){
-        Map<String, Object> returnMap = new HashMap<>(16);
+    private List<Map<String, Object>> getReturnMap(List<String> dateList,Map<String, Object> infoMap){
+
+
+        List<Map<String, Object>> maps = new ArrayList<>();
 
         //拿出每条数据判断
         for (String date:dateList) {
+            Map<String, Object> returnMap = new HashMap<>(16);
             //驳回
             boolean fail = false;
             //异常
@@ -505,49 +507,53 @@ public class SignInfoByStudentServiceImpl extends ServiceImpl<SignInfoByStudentM
             //未打卡
             boolean noSign = false;
 
-            /* 0-未打卡 1-正常 2-异常 3-免打卡 4-驳回*/
-            int todayStatus = 1;
-
             //取出数据
             Map<String, Object> info = (Map<String, Object>) infoMap.get(date);
             List<SignAndApplyDto> infoList = (List<SignAndApplyDto>) info.get(BaseVo.LIST);
-            //打卡状态
-            for (SignAndApplyDto signInfo:infoList) {
-                //判断签到状态
-                if (signInfo.getSignStatus() == null ){
-                    noSign = true;
-                }else if (signInfo.getSignStatus() == 3){
-                    //是否免签
-                    noPunch = true;
-                }else if (signInfo.getSignStatus() == 2){
-                    //是否异常
-                    exception = true;
+            if (infoList.size() > 0){
+                /* 0-未打卡 1-正常 2-异常 3-免打卡 4-驳回*/
+                int todayStatus = 1;
+                //打卡状态
+                for (SignAndApplyDto signInfo:infoList) {
+                    //判断签到状态
+                    if (signInfo.getSignStatus() == null ){
+                        noSign = true;
+                    }else if (signInfo.getSignStatus() == 3){
+                        //是否免签
+                        noPunch = true;
+                    }else if (signInfo.getSignStatus() == 2){
+                        //是否异常
+                        exception = true;
+                    }
+                    //判断是否有补卡申请被驳回
+                    if (signInfo.getApplyStatus() != null && signInfo.getApplyStatus() == 2){
+                        //是否失败
+                        fail = true;
+                    }
+
                 }
-                //判断是否有补卡申请被驳回
-                if (signInfo.getApplyStatus() != null && signInfo.getApplyStatus() == 2){
-                    //是否失败
-                    fail = true;
+                //判断状态
+                if (noSign){
+                    todayStatus = 0;
+                }
+                if (exception){
+                    todayStatus = 2;
+                }
+                if (noPunch){
+                    todayStatus = 4;
+                }
+                if (fail){
+                    todayStatus = 3;
                 }
 
-            }
-            //判断状态
-            if (noSign){
-                todayStatus = 0;
-            }
-            if (exception){
-                todayStatus = 2;
-            }
-            if (noPunch){
-                todayStatus = 3;
-            }
-            if (fail){
-                todayStatus = 4;
+                returnMap.put("todayStatus",todayStatus);
+                returnMap.put(BaseVo.LIST,infoList);
+                returnMap.put("date",date);
+                maps.add(returnMap);
             }
 
-            info.put("todayStatus",todayStatus);
-            returnMap.put(date,infoMap);
         }
-        return returnMap;
+        return maps;
     }
     /**
      *  对某个学生生成 date日期的 默认2条记录，若times有传则为4

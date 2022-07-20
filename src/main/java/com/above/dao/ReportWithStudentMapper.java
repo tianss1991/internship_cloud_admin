@@ -20,20 +20,15 @@ import java.util.List;
 public interface ReportWithStudentMapper extends BaseMapper<ReportWithStudent> {
     //查看日报详情（学生端）
     ReportWithStudentDto getDailyPaperStudent(ReportWithStudentVo vo);
-    //查看日报(教师端)
-    List<ReportWithStudentDto> getDailyPaperTeacherList(ReportWithStudentVo vo);
+
     //统计日报-未写(教师端)
     List<ReportWithStudentDto>  getDailyPaperStatisticsList(ReportWithStudentVo vo);
     //统计日报-已写(教师端)
     List<ReportWithStudentDto> getStatisticsList(ReportWithStudentVo vo);
-    //查询周报(学生端)
-    List<ReportWithStudentDto> getWeeklyNewspaperList(ReportWithStudentVo vo);
-    //查询周报(教师端)
+    //查询日/周/月报/实习总结(教师端)
     List<ReportWithStudentDto> getWeeklyNewspaperTeacherList(ReportWithStudentVo vo);
     //查询日报详情(教师端)
     ReportWithStudentDto getDailyPaperTeacher(ReportWithStudentVo vo);
-    //查询月报(教师端)
-    List<ReportWithStudentDto> getMonthlyMagazineTeacherList(ReportWithStudentVo vo);
     //查询周报详情(学生端)
      ReportWithStudentDto getWeeklyNewspaperStudent(ReportWithStudentVo vo);
     //查询月报详情(学生端)
@@ -42,20 +37,18 @@ public interface ReportWithStudentMapper extends BaseMapper<ReportWithStudent> {
     ReportWithStudentDto  getWeeklyNewspaperTeacher(ReportWithStudentVo vo);
     //查询月报详情(教师端)
     ReportWithStudentDto getMonthlyMagazineTeacher(ReportWithStudentVo vo);
-    //查询日报(学生端)
+    //查询日/周/月报/实习总结(学生端)
     List<ReportWithStudentDto> getDailyPaperList(ReportWithStudentVo vo);
-    //查询月报(学生端)
-    List<ReportWithStudentDto> getMonthlyMagazineList(ReportWithStudentVo vo);
-    //查询实习总结(学生端)
-    List<ReportWithStudentDto> getSummarizeList(ReportWithStudentVo vo);
-    //查询实习总结(教师端)
-    List<ReportWithStudentDto> getSummarizeTeacherList(ReportWithStudentVo vo);
     //查询实习总结详情(学生端)
     ReportWithStudentDto getSummarizeStudent(ReportWithStudentVo vo);
     //查询实习总结详情(教师端)
     ReportWithStudentDto getSummarizeTeacher(ReportWithStudentVo vo);
     //查询当天日报添加的数量
-    int today(ReportWithStudentVo vo);
+    Integer today(ReportWithStudentVo vo);
     //查询指定时间内的周报数量
-    int getweek(ReportWithStudentVo vo);
+    Integer getweek(ReportWithStudentVo vo);
+    //查询日/周/月报/实习总结总数(学生端)
+    Integer getDailyPaperListCount(ReportWithStudentVo vo);
+    //查询日/周/月报/实习总结总数(教师端)
+    Integer getWeeklyNewspaperTeacherListCount(ReportWithStudentVo vo);
 }

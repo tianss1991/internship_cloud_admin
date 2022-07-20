@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -65,9 +67,23 @@ public class InternshipPlanInfoController {
         Integer summarizeCount = vo.getSummarizeCount();
         Integer summarizeWordCount = vo.getSummarizeWordCount();
         Integer signTimes = vo.getSignTimes();
+        Integer isMustImage = vo.getIsMustImage();
+
         //判断参数
         if (vo == null){
             return CommonResult.error(500,"缺少参数");
+        }
+        if(userDto.getUserRoleDto().getRoleCode().equals("admin")){
+            if (vo.getSchoolId() == null){
+                return CommonResult.error(500,"缺少学校id");
+            }
+            if (vo.getDepartmentId() == null){
+                return CommonResult.error(500,"缺少系部id");
+            }
+        }else if(userDto.getUserRoleDto().getRoleCode().equals("schoolAdmin")){
+            if (vo.getDepartmentId() == null){
+                return CommonResult.error(500,"缺少系部id");
+            }
         }
         if (planTitle == null){
             return CommonResult.error(500,"缺少计划名称");
@@ -125,6 +141,9 @@ public class InternshipPlanInfoController {
         }
         if (signTimes == null){
             return CommonResult.error(500,"缺少打卡次数");
+        }
+        if (isMustImage == null){
+            return CommonResult.error(500,"缺少图片是否必传");
         }
         try{
             return internshipPlanInfoService.addandmodifyInternshipPlanInfo(vo,userDto);

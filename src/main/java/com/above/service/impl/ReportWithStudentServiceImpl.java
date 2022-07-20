@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -196,7 +197,9 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
             boolean save = this.save(rws);
 
         if (save) {
-            return CommonResult.success("新增成功", null);
+            Map<Object, Object> map = new HashMap<>();
+            map.put("id",rws.getId());
+            return CommonResult.success("新增成功", map);
         } else {
             return CommonResult.error(500, "新增失败");
         }
@@ -227,32 +230,17 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
             }
             vo.setStudentId(studentId);
             HashMap<String, Object> map = new HashMap<>(16);
-            //日报
-            if (reportType==1){
 
-                List<ReportWithStudentDto> dailyPaperList = reportWithStudentMapper.getDailyPaperList(vo);
-                map.put(BaseVo.LIST, dailyPaperList);
-                return CommonResult.success(map);
-            }
-            //周报
-            if (reportType==2){
+            List<ReportWithStudentDto> list = reportWithStudentMapper.getDailyPaperList(vo);
+            Integer totalCount = reportWithStudentMapper.getDailyPaperListCount(vo);
 
-                List<ReportWithStudentDto> list = reportWithStudentMapper.getWeeklyNewspaperList(vo);
-                map.put(BaseVo.LIST, list);
-                return CommonResult.success(map);
-            }
-            //月报
-            if (reportType==3){
-                List<ReportWithStudentDto> monthlyMagazineList = reportWithStudentMapper.getMonthlyMagazineList(vo);
-                map.put(BaseVo.LIST, monthlyMagazineList);
-                return CommonResult.success(map);
-                }
-            //实习总结
-            if (reportType==4){
-                List<ReportWithStudentDto> summarizeList = reportWithStudentMapper.getSummarizeList(vo);
-                map.put(BaseVo.LIST,summarizeList);
-                return CommonResult.success(map);
-            }
+            //总页数
+            map.put(BaseVo.LIST, list);
+            //总数
+            map.put(BaseVo.TOTAL, totalCount);
+            //返回数据
+            map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),totalCount));
+            return CommonResult.success(map);
 
             }
         //教师端
@@ -268,31 +256,16 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
             }
             vo.setTeacherId(teacherId);
             HashMap<String, Object> map = new HashMap<>(16);
-            //日报
-            if (reportType==1){
 
-                List<ReportWithStudentDto> list = reportWithStudentMapper.getDailyPaperTeacherList(vo);
-                map.put(BaseVo.LIST, list);
+            List<ReportWithStudentDto> list = reportWithStudentMapper.getWeeklyNewspaperTeacherList(vo);
+            Integer totalCount = reportWithStudentMapper.getWeeklyNewspaperTeacherListCount(vo);
+            //总页数
+            map.put(BaseVo.LIST, list);
+            //总数
+            map.put(BaseVo.TOTAL, totalCount);
+            //返回数据
+            map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),totalCount));
                 return CommonResult.success(map);
-            }
-            //周报
-            if (reportType==2){
-
-                List<ReportWithStudentDto> list = reportWithStudentMapper.getWeeklyNewspaperTeacherList(vo);
-                map.put(BaseVo.LIST, list);
-                return CommonResult.success(map);
-            }
-            //月报
-            if (reportType==3){
-
-                List<ReportWithStudentDto> list = reportWithStudentMapper.getMonthlyMagazineTeacherList(vo);
-                map.put(BaseVo.LIST, list);
-                return CommonResult.success(map);
-            }
-            //实习总结
-            if (reportType==4){
-                reportWithStudentMapper.getSummarizeTeacherList(vo);
-            }
 
         }
         return CommonResult.error(500,"缺少用户类型");
@@ -438,7 +411,9 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
                             rws1.setReportType(1);
                             boolean save = this.save(rws1);
                             if (save) {
-                                return CommonResult.success("修改成功", null);
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("id",rws1.getId());
+                                return CommonResult.success("修改成功", map);
                             } else {
                                 return CommonResult.error(500, "修改失败");
                             }

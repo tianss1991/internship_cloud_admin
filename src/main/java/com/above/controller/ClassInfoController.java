@@ -126,7 +126,7 @@ public class ClassInfoController {
             return CommonResult.error(500,"缺少参数");
         }
         if (classVo.getClassIdList() == null){
-            return CommonResult.error(500,"缺少二级学院id");
+            return CommonResult.error(500,"缺少班级id");
         }
         try {
             return classInfoService.deleteClass(userDto,classVo);

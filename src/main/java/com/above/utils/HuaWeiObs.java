@@ -46,7 +46,7 @@ public  class HuaWeiObs {
             obsClient =  new ObsClient(HuaWeiObsConfig.apiKey, HuaWeiObsConfig.secretKey, HuaWeiObsConfig.endPoint);
         }
         String substring = obsUrl.substring(obsUrl.lastIndexOf("myhuaweicloud.com/"));
-        ObsObject obsObject = obsClient.getObject("inspection", substring);
+        ObsObject obsObject = obsClient.getObject(HuaWeiObsConfig.bucketName, substring);
         // 读取对象内容
         InputStream input = obsObject.getObjectContent();
         byte[] b = new byte[1024];

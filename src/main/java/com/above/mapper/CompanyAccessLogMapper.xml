@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.above.dao.CompanyAccessLogMapper">
+
+    <sql id="CompanyAccessInfo">
+        cal.id,
+        cal.plan_id,
+        cal.teacher_id,
+        cal.company_name,
+        cal.address,
+        cal.content,
+        cal.create_by,
+        cal.create_time,
+        cal.title,
+        cal.img_url,
+        cal.update_by,
+        cal.update_time
+    </sql>
+
+    <sql id="plan_table_filed">
+        gi.grade_year as gradeYear,
+        mi.major_name as majorName,
+        sc.school_name as schoolName,
+        cla.class_name as className,
+        de.department_name as departmentName
+    </sql>
+
+    <sql id="plan_table">
+        LEFT JOIN school_info AS sc ON ipi.school_id = sc.id
+        LEFT JOIN department_info de ON ipi.department_id = de.id
+        LEFT JOIN class_info AS cla ON ipi.class_id = cla.id
+        LEFT JOIN grade_info gi ON ipi.grade_id = gi.id
+        LEFT JOIN major_info mi ON ipi.major_id = mi.id
+    </sql>
+
+    <select id="getListForAdmin" resultType="com.above.dto.CompanyAccessLogDto">
+        SELECT
+        <include refid="CompanyAccessInfo"/>,
+            ipi.plan_title as planTitle,
+            <include refid="plan_table_filed"/>
+        FROM
+            company_access_log cal
+                LEFT JOIN internship_plan_info ipi ON cal.plan_id = ipi.id
+                <include refid="plan_table"/>
+        <where>
+            ipi.deleted = 0 and cal.deleted = 0
+            <if test="gradeId != null and gradeId > 0">
+                and ipi.grade_id = #{gradeId}
+            </if>
+            <if test="majorId != null and gradeId > 0">
+                and ipi.grade_id = #{gradeId}
+            </if>
+            <if test="schoolId != null and schoolId > 0">
+                ipi.school_id = #{schoolId}
+            </if>
+            <if test="schoolIdList != null and schoolIdList.size()>0">
+                AND ipi.school_id IN
+                <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="departmentId != null and departmentId > 0">
+                ipi.department_id = #{departmentId}
+            </if>
+            <if test="departmentIdList != null and departmentIdList.size()>0">
+                AND ipi.department_id IN
+                <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="key != null and key != ''">
+                AND (ipi.plan_title like  CONCAT('%',#{key},'%') OR ti.teacher_name like  CONCAT('%',#{key},'%'))
+            </if>
+        </where>
+        ORDER BY cal.create_time DESC
+        limit #{start},#{size}
+    </select>
+    <select id="getListForAdminCount" resultType="java.lang.Integer">
+        SELECT
+        count(*)
+        FROM
+        company_access_log cal
+        LEFT JOIN internship_plan_info ipi ON cal.plan_id = ipi.id
+        LEFT JOIN teacher_info ti ON cal.teacher_id = ti.id
+        <where>
+            ipi.deleted = 0 and cal.deleted = 0
+            <if test="gradeId != null and gradeId > 0">
+                and ipi.grade_id = #{gradeId}
+            </if>
+            <if test="majorId != null and gradeId > 0">
+                and ipi.grade_id = #{gradeId}
+            </if>
+            <if test="schoolId != null and schoolId > 0">
+                ipi.school_id = #{schoolId}
+            </if>
+            <if test="schoolIdList != null and schoolIdList.size()>0">
+                AND ipi.school_id IN
+                <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="departmentId != null and departmentId > 0">
+                ipi.department_id = #{departmentId}
+            </if>
+            <if test="departmentIdList != null and departmentIdList.size()>0">
+                AND ipi.department_id IN
+                <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="key != null and key != ''">
+                AND (ipi.plan_title like  CONCAT('%',#{key},'%') OR ti.teacher_name like  CONCAT('%',#{key},'%'))
+            </if>
+        </where>
+    </select>
+    <select id="getPlanWithOther" resultType="com.above.dto.PlanWithOther">
+        SELECT
+            ipi.id as id,
+            ipi.plan_title as planTitle,
+            ipi.start_time as startTime,
+            ipi.end_time as endTime,
+            ipi.adviser_size as instructorSize,
+            ipi.instructor_size as adviserSize,
+            <include refid="plan_table_filed"/>
+        FROM
+            internship_plan_info ipi ON cal.plan_id = ipi.id
+            <include refid="plan_table"/>
+        <where>
+            ipi.deleted = 0
+            <if test="key != null and key != ''">
+                AND ipi.plan_title like  CONCAT('%',#{key},'%')
+            </if>
+            <if test="gradeId != null and gradeId > 0">
+                and ipi.grade_id = #{gradeId}
+            </if>
+            <if test="majorId != null and gradeId > 0">
+                and ipi.grade_id = #{gradeId}
+            </if>
+            <if test="schoolId != null and schoolId > 0">
+                ipi.school_id = #{schoolId}
+            </if>
+            <if test="schoolIdList != null and schoolIdList.size()>0">
+                AND ipi.school_id IN
+                <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="departmentId != null and departmentId > 0">
+                ipi.department_id = #{departmentId}
+            </if>
+            <if test="departmentIdList != null and departmentIdList.size()>0">
+                AND ipi.department_id IN
+                <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="status != null and status > 0">
+                AND ipi.adviser_size is null
+                AND ipi.instructor_size is null
+            </if>
+        </where>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getPlanWithOtherCount" resultType="java.lang.Integer">
+        SELECT
+        ipi.id as id,
+        ipi.plan_title as ,
+        ipi.start_time,
+        ipi.end_time,
+        ipi.adviser_size,
+        ipi.instructor_size,
+        <include refid="plan_table_filed"/>
+        FROM
+        internship_plan_info ipi ON cal.plan_id = ipi.id
+        <include refid="plan_table"/>
+        <where>
+            ipi.deleted = 0
+            <if test="key != null and key != ''">
+                AND ipi.plan_title like  CONCAT('%',#{key},'%')
+            </if>
+            <if test="gradeId != null and gradeId > 0">
+                and ipi.grade_id = #{gradeId}
+            </if>
+            <if test="majorId != null and gradeId > 0">
+                and ipi.grade_id = #{gradeId}
+            </if>
+            <if test="schoolId != null and schoolId > 0">
+                ipi.school_id = #{schoolId}
+            </if>
+            <if test="schoolIdList != null and schoolIdList.size()>0">
+                AND ipi.school_id IN
+                <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="departmentId != null and departmentId > 0">
+                ipi.department_id = #{departmentId}
+            </if>
+            <if test="departmentIdList != null and departmentIdList.size()>0">
+                AND ipi.department_id IN
+                <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

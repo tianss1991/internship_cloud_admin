@@ -57,7 +57,7 @@ public class PayrollDto  {
     private Date dateTime;
 
     @ApiModelProperty(value = "创建时间")
-    @JsonFormat(pattern = "yyyy-MM")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createTime;
 
     @ApiModelProperty(value = "逻辑删除 0-未删除 1-已删除")

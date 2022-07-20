@@ -64,13 +64,14 @@ public class ReportWithStudent implements Serializable {
     @TableField("`month`")
     private String month;
 
-    @DateTimeFormat(pattern = "yyy-MM-dd HH:mm")
+    @DateTimeFormat(pattern = "yyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "开始时间（只有周报有）")
     @TableField("start_time")
     private Date startTime;
 
-    @DateTimeFormat(pattern = "yyy-MM-dd HH:mm")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    @DateTimeFormat(pattern = "yyy-MM-dd")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     @ApiModelProperty(value = "结束时间（只有周报有）")
     @TableField("end_time")
     private Date endTime;

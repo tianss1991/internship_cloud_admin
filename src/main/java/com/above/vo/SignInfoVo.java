@@ -42,7 +42,7 @@ public class SignInfoVo extends BaseVo{
     private Integer applyId;
 
     @ApiModelProperty("图片地址JSON字符串")
-    private String urlList;
+    private String imgUrl;
 
     /*签到字段*/
 

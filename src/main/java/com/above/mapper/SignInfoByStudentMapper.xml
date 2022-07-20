@@ -65,11 +65,14 @@
         SELECT
         <include refid="SignDto"/>,
         sai.id applyId,
-        sai.`status` applyStatus
+        sai.`status` as applyStatus,
+        s.student_name as  studentName,
+        u.user_avatar as userAva
         FROM
         sign_info_by_student AS sibs
         LEFT JOIN sign_apply_info AS sai ON sibs.id = sai.sign_id AND sai.deleted = 0
         LEFT JOIN student_info AS s on sibs.student_id = s.id
+        LEFT JOIN `user` AS u  on s.user_id = u.id
         <where>
             <if test=" planId != null and planId > 0">
                 sibs.internship_plan_id = #{planId}

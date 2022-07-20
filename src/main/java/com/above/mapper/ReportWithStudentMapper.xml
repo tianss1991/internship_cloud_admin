@@ -35,48 +35,6 @@
           AND rws.id=#{id}
       </if>
     </select>
-  <select id="getDailyPaperTeacherList" resultType="com.above.dto.ReportWithStudentDto">
-     SELECT
-     u.user_avatar AS userAvatar,
-     u.user_name AS userName,
-     mi.id AS majorId,
-     rws.id,
-     rws.content,
-     rws.student_id AS studentId,
-     rws.create_time AS createTime,
-     rws.report_type AS report_type,
-     rws.title,
-     rws.`status`,
-     rws.reason
-     FROM report_with_student AS rws
-     LEFT JOIN internship_with_teacher AS iwt on rws.relation_plan_id=iwt.relation_plan_id
-     LEFT JOIN teacher_info AS ti on iwt.teacher_id=ti.id
-     LEFT JOIN student_info AS si on si.id=rws.student_id
-     LEFT JOIN `user` AS u on u.id= si.user_id
-     LEFT JOIN internship_plan_info AS ipi on rws.relation_plan_id=ipi.id
-     LEFT JOIN major_info AS mi on ipi.major_id=mi.id
-     WHERE
-     u.`status`=0
-     AND
-     u.deleted=0
-     AND
-     rws.deleted=0
-     AND
-     rws.report_type=1
-      AND rws.`status`in(1,2,3,4)
-      <if test="teacherId!=null and teacherId!=0">
-       AND iwt.teacher_id=#{teacherId}
-     </if>
-     <if test="userName!=null and userName!=''">
-       AND u.user_name like concat ('%',#{userName},'%')
-     </if>
-     <if test="majorId!=null and majorId!=0">
-       AND mi.id=#{majorId}
-     </if>
-     <if test="status!=null and status!=0">
-       AND rws.`status`=#{status}
-     </if>
-  </select>
     <select id="getDailyPaperStatisticsList" resultType="com.above.dto.ReportWithStudentDto">
      SELECT DISTINCT
      iibs.relation_student_id AS studentId,
@@ -145,28 +103,7 @@
             AND rws.create_time&gt;#{createTime}
         </if>
     </select>
-    <select id="getWeeklyNewspaperList" resultType="com.above.dto.ReportWithStudentDto">
-        SELECT
-        u.user_name AS userName,
-        u.user_avatar AS userAvatar,
-        rws.start_time AS startTime,
-        rws.end_time AS endTime,
-        rws.report_type AS reportType,
-        rws.create_time AS createTime,
-        rws.`week` AS week,
-        rws.title AS title,
-        rws.content AS content,
-        rws.`status` AS status
-        FROM report_with_student AS rws
-        LEFT JOIN student_info AS si ON rws.student_id=si.id
-        LEFT JOIN `user` AS u ON si.user_id=u.id
-        WHERE rws.report_type=2
-        AND
-        rws.deleted=0
-      <if test="studentId!=null and studentId!=0">
-      AND  rws.student_id=#{studentId}
-      </if>
-    </select>
+
     <select id="getWeeklyNewspaperTeacherList" resultType="com.above.dto.ReportWithStudentDto">
         SELECT
         u.user_avatar AS userAvatar,
@@ -179,6 +116,8 @@
         rws.end_time AS endTime,
         rws.report_type AS reportType,
         rws.title,
+        rws.`month`,
+        rws.`week`,
         rws.`status`,
         rws.content,
         rws.reason
@@ -196,9 +135,10 @@
         AND
         rws.deleted=0
         AND
-        rws.report_type=2
-        AND
         rws.`status`in(1,2,3,4)
+        <if test="reportType!=null and reportType!=0">
+            AND rws.report_type=#{reportType}
+        </if>
         <if test="teacherId!=null and teacherId!=0">
             AND iwt.teacher_id=#{teacherId}
         </if>
@@ -211,6 +151,8 @@
         <if test="status!=null and status!=0">
             AND rws.`status`=#{status}
         </if>
+        ORDER BY  rws.create_time DESC
+        limit #{start},#{size}
     </select>
     <select id="getDailyPaperTeacher" resultType="com.above.dto.ReportWithStudentDto">
         SELECT
@@ -233,11 +175,10 @@
         LEFT JOIN student_info AS si on rws.student_id=si.id
         LEFT JOIN `user` AS u on si.user_id=u.id
         WHERE
-        u.`status`=0
-        AND
         u.deleted=0
         AND
         rws.report_type=1
+
         <if test="teacherId!=null and teacherId!=0">
             AND iwt.teacher_id=#{teacherId}
         </if>
@@ -245,50 +186,7 @@
             AND rws.id=#{id}
         </if>
     </select>
-    <select id="getMonthlyMagazineTeacherList" resultType="com.above.dto.ReportWithStudentDto">
-        SELECT
-        u.user_avatar AS userAvatar,
-        u.user_name AS userName,
-        mi.id AS majorId,
-        rws.id,
-        rws.student_id AS studentId,
-        rws.create_time AS createTime,
-        rws.report_type AS report_type,
-        rws.title,
-        rws.content,
-        rws.`status`,
-        rws.reason,
-        rws.`month`
-        FROM report_with_student AS rws
-        LEFT JOIN internship_with_teacher AS iwt on rws.relation_plan_id=iwt.relation_plan_id
-        LEFT JOIN teacher_info AS ti on iwt.teacher_id=ti.id
-        LEFT JOIN student_info AS si on si.id=rws.student_id
-        LEFT JOIN `user` AS u on u.id= si.user_id
-        LEFT JOIN internship_plan_info AS ipi on rws.relation_plan_id=ipi.id
-        LEFT JOIN major_info AS mi on ipi.major_id=mi.id
-        WHERE
-        u.`status`=0
-        AND
-        u.deleted=0
-        AND
-        rws.deleted=0
-        AND
-        rws.report_type=3
-        AND
-        rws.`status`in(1,2,3,4)
-        <if test="teacherId!=null and teacherId!=0">
-            AND iwt.teacher_id=#{teacherId}
-        </if>
-        <if test="userName!=null and userName!=''">
-            AND u.user_name like concat ('%',#{userName},'%')
-        </if>
-        <if test="majorId!=null and majorId!=0">
-            AND mi.id=#{majorId}
-        </if>
-        <if test="status!=null and status!=0">
-            AND rws.`status`=#{status}
-        </if>
-    </select>
+
     <select id="getWeeklyNewspaperStudent" resultType="com.above.dto.ReportWithStudentDto">
         SELECT
         u.user_avatar AS userAvatar,
@@ -311,8 +209,6 @@
         LEFT JOIN student_info AS si on rws.student_id=si.id
         LEFT JOIN `user` AS u on si.user_id=u.id
         WHERE
-        u.`status`=0
-        AND
         u.deleted=0
         AND
         rws.deleted=0
@@ -346,8 +242,6 @@
         LEFT JOIN student_info AS si on rws.student_id=si.id
         LEFT JOIN `user` AS u on si.user_id=u.id
         WHERE
-        u.`status`=0
-        AND
         u.deleted=0
         AND
         rws.deleted=0
@@ -439,68 +333,10 @@
         rws.title AS title,
         rws.`status` AS status,
         rws.img_url AS imgUrl,
-        rws.url AS url,
-        rws.content,
-        rws.score AS score,
-        rws.evaluation AS evaluation,
-        rws.report_type AS reportType,
-        rws.reason AS reason
-        FROM report_with_student AS rws
-        LEFT JOIN student_info AS si on rws.student_id=si.id
-        LEFT JOIN `user` AS u on si.user_id=u.id
-        WHERE
-        u.`status`=0
-        AND
-        u.deleted=0
-        AND
-        rws.deleted=0
-        AND
-        rws.report_type=1
-        <if test="studentId !=null ||studentId !=0">
-            AND rws.student_id=#{studentId}
-        </if>
-    </select>
-    <select id="getMonthlyMagazineList" resultType="com.above.dto.ReportWithStudentDto">
-
-        SELECT
-        u.user_avatar AS userAvatar,
-        u.user_name AS userName,
-        rws.id AS id,
-        rws.create_time AS createTime,
-        rws.title AS title,
-        rws.`status` AS status,
-        rws.img_url AS imgUrl,
-        rws.url AS url,
-        rws.content,
-        rws.score AS score,
+        rws.`week`,
         rws.`month`,
-        rws.evaluation AS evaluation,
-        rws.report_type AS reportType,
-        rws.reason AS reason
-        FROM report_with_student AS rws
-        LEFT JOIN student_info AS si on rws.student_id=si.id
-        LEFT JOIN `user` AS u on si.user_id=u.id
-        WHERE
-        u.`status`=0
-        AND
-        u.deleted=0
-        AND
-        rws.deleted=0
-        AND
-        rws.report_type=3
-        <if test="studentId !=null ||studentId !=0">
-            AND rws.student_id=#{studentId}
-        </if>
-    </select>
-    <select id="getSummarizeList" resultType="com.above.dto.ReportWithStudentDto">
-        SELECT
-        u.user_avatar AS userAvatar,
-        u.user_name AS userName,
-        rws.id AS id,
-        rws.create_time AS createTime,
-        rws.title AS title,
-        rws.`status` AS status,
-        rws.img_url AS imgUrl,
+        rws.start_time AS startTime,
+        rws.end_time AS endTime,
         rws.url AS url,
         rws.content,
         rws.score AS score,
@@ -516,54 +352,16 @@
         u.deleted=0
         AND
         rws.deleted=0
-        AND
-        rws.report_type=4
+        <if test="reportType!=null and reportType!=0">
+            AND rws.report_type=#{reportType}
+        </if>
         <if test="studentId !=null ||studentId !=0">
             AND rws.student_id=#{studentId}
         </if>
+        ORDER BY  rws.create_time DESC
+        limit #{start},#{size}
     </select>
-    <select id="getSummarizeTeacherList" resultType="com.above.dto.ReportWithStudentDto">
-        SELECT
-        u.user_avatar AS userAvatar,
-        u.user_name AS userName,
-        mi.id AS majorId,
-        rws.id,
-        rws.content,
-        rws.student_id AS studentId,
-        rws.create_time AS createTime,
-        rws.report_type AS report_type,
-        rws.title,
-        rws.`status`,
-        rws.reason
-        FROM report_with_student AS rws
-        LEFT JOIN internship_with_teacher AS iwt on rws.relation_plan_id=iwt.relation_plan_id
-        LEFT JOIN teacher_info AS ti on iwt.teacher_id=ti.id
-        LEFT JOIN student_info AS si on si.id=rws.student_id
-        LEFT JOIN `user` AS u on u.id= si.user_id
-        LEFT JOIN internship_plan_info AS ipi on rws.relation_plan_id=ipi.id
-        LEFT JOIN major_info AS mi on ipi.major_id=mi.id
-        WHERE
-        u.`status`=0
-        AND
-        u.deleted=0
-        AND
-        rws.deleted=0
-        AND
-        rws.report_type=4
-        AND rws.`status`in(1,2,3,4)
-        <if test="teacherId!=null and teacherId!=0">
-            AND iwt.teacher_id=#{teacherId}
-        </if>
-        <if test="userName!=null and userName!=''">
-            AND u.user_name like concat ('%',#{userName},'%')
-        </if>
-        <if test="majorId!=null and majorId!=0">
-            AND mi.id=#{majorId}
-        </if>
-        <if test="status!=null and status!=0">
-            AND rws.`status`=#{status}
-        </if>
-    </select>
+
     <select id="getSummarizeStudent" resultType="com.above.dto.ReportWithStudentDto">
         SELECT
         u.user_avatar AS userAvatar,
@@ -583,8 +381,6 @@
         LEFT JOIN student_info AS si on rws.student_id=si.id
         LEFT JOIN `user` AS u on si.user_id=u.id
         WHERE
-        u.`status`=0
-        AND
         u.deleted=0
         AND
         rws.deleted=0
@@ -649,6 +445,60 @@
         AND start_time &gt; #{startTime}
         AND end_time &lt; #{endTime}
         AND student_id=#{studentId}
+    </select>
+    <select id="getDailyPaperListCount" resultType="java.lang.Integer">
+        SELECT
+        COUNT(rws.id)
+        FROM report_with_student AS rws
+        LEFT JOIN student_info AS si on rws.student_id=si.id
+        LEFT JOIN `user` AS u on si.user_id=u.id
+        WHERE
+        u.`status`=0
+        AND
+        u.deleted=0
+        AND
+        rws.deleted=0
+        <if test="reportType!=null and reportType!=0">
+            AND rws.report_type=#{reportType}
+        </if>
+        <if test="studentId !=null ||studentId !=0">
+            AND rws.student_id=#{studentId}
+        </if>
+
+    </select>
+    <select id="getWeeklyNewspaperTeacherListCount" resultType="java.lang.Integer">
+        SELECT
+      COUNT(rws.id)
+        FROM report_with_student AS rws
+        LEFT JOIN internship_with_teacher AS iwt on rws.relation_plan_id=iwt.relation_plan_id
+        LEFT JOIN teacher_info AS ti on iwt.teacher_id=ti.id
+        LEFT JOIN student_info AS si on si.id=rws.student_id
+        LEFT JOIN `user` AS u on u.id= si.user_id
+        LEFT JOIN internship_plan_info AS ipi on rws.relation_plan_id=ipi.id
+        LEFT JOIN major_info AS mi on ipi.major_id=mi.id
+        WHERE
+        u.`status`=0
+        AND
+        u.deleted=0
+        AND
+        rws.deleted=0
+        AND
+        rws.`status`in(1,2,3,4)
+        <if test="reportType!=null and reportType!=0">
+            AND rws.report_type=#{reportType}
+        </if>
+        <if test="teacherId!=null and teacherId!=0">
+            AND iwt.teacher_id=#{teacherId}
+        </if>
+        <if test="userName!=null and userName!=''">
+            AND u.user_name like concat ('%',#{userName},'%')
+        </if>
+        <if test="majorId!=null and majorId!=0">
+            AND mi.id=#{majorId}
+        </if>
+        <if test="status!=null and status!=0">
+            AND rws.`status`=#{status}
+        </if>
     </select>
 
 </mapper>

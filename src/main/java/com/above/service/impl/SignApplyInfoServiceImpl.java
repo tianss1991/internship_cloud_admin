@@ -72,8 +72,8 @@ public class SignApplyInfoServiceImpl extends ServiceImpl<SignApplyInfoMapper, S
         signApplyInfo.setApplyTime(vo.getSignDateTime()).setApplyType(1).setSignId(vo.getSignId()).setStudentId(userDto.getStudentInfo().getId())
                     .setInternshipPlanId(userDto.getInternshipPlanInfo().getId()).setInternshipId(userDto.getInternshipInfo().getId())
                     .setReason(vo.getReason()).setCreateBy(userDto.getId()).setStatus(1);
-        if (vo.getUrlList() != null){
-            signApplyInfo.setImgUrl(vo.getUrlList());
+        if (vo.getImgUrl() != null){
+            signApplyInfo.setImgUrl(vo.getImgUrl());
         }
         //查看是否是草稿
         if (vo.getIsDraft() != null && vo.getIsDraft() == 1){
@@ -107,8 +107,8 @@ public class SignApplyInfoServiceImpl extends ServiceImpl<SignApplyInfoMapper, S
         applyInfo.setStatus(SignApplyInfo.AUDITING).setUpdateBy(userDto.getId());
         boolean falg = false;
         //判断参数不为空则更新
-        if (!StringUtils.isBlank(vo.getUrlList())){
-            applyInfo.setImgUrl(vo.getUrlList());
+        if (!StringUtils.isBlank(vo.getImgUrl())){
+            applyInfo.setImgUrl(vo.getImgUrl());
             falg = true;
         }
         if (!StringUtils.isBlank(vo.getReason())){
