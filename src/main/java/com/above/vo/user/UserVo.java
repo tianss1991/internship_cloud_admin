@@ -65,4 +65,5 @@ public class UserVo extends BaseVo {
     @ApiModelProperty("学校姓名")
     private String schoolName;
 
+
 }

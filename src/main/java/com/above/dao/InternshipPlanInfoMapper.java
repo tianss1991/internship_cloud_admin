@@ -58,6 +58,13 @@ public interface InternshipPlanInfoMapper extends BaseMapper<InternshipPlanInfo>
     InternshipPlanInfoDto getInternshipInfoById(InternshipPlanInfoVo vo);
 
     /**
+    *@author: GG
+    *@data: 2022/7/21 11:16
+    *@function:通过实习计划id拿到企业评分与校内评分
+    */
+    List<InternshipScoreDto> getInternshipScoreById(InternshipPlanInfoVo vo);
+
+    /**
      *@author: GG
      *@data: 2022/7/18 10:32
      *@function:获取实习分配列表中已分配教师学生列表
@@ -70,5 +77,28 @@ public interface InternshipPlanInfoMapper extends BaseMapper<InternshipPlanInfo>
      * @return
      */
     SimplePlanInfoDto getPlanInfoByStudent(BaseVo vo);
+
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 9:13
+    *@function:根据教师id拿到实习计划列表
+    */
+    List<SimplePlanInfoDto> getPlanInfoByTeacher(BaseVo vo);
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 14:22
+    *@function:根据学生id拿到实习计划列表
+    */
+    List<SimplePlanInfoDto> getPlanInfoByStudentId(BaseVo vo);
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 15:04
+    *@function:根据学生id拿到个人资料
+    */
+    SimpleStudentInfoDto getStudentInfoByStudent(BaseVo vo);
+
 
 }

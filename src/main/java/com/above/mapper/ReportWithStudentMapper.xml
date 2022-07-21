@@ -36,60 +36,101 @@
       </if>
     </select>
     <select id="getDailyPaperStatisticsList" resultType="com.above.dto.ReportWithStudentDto">
-     SELECT DISTINCT
-     iibs.relation_student_id AS studentId,
-     u.user_name AS userName,
-     u.user_avatar AS userAvatar,
-     si.student_number AS studentNumber,
-     gi.grade_year AS gradeYear,
-     mi.major_name AS majorName,
-     mi.id AS majorId
-     FROM internship_info_by_student AS iibs
-     LEFT JOIN internship_plan_info AS ipi ON iibs.relation_plan_id=ipi.id
-     LEFT JOIN internship_with_teacher AS iwt ON ipi.id=iwt.relation_plan_id
-     LEFT JOIN major_info AS mi ON ipi.major_id=mi.id
-     LEFT JOIN grade_info AS gi ON ipi.school_id=gi.school_id
-     LEFT JOIN report_with_student AS rws ON ipi.id=rws.relation_plan_id
-     LEFT JOIN student_info AS si ON rws.student_id=si.id
-     LEFT JOIN `user` AS u ON si.user_id=u.id
-     WHERE
-     iibs.relation_student_id NOT IN(SELECT DISTINCt student_id FROM report_with_student)
-      AND rws.report_type in(1,2,3,4)
-      AND rws.deleted=0
-      <if test="userName!=null and userName!=''">
-          AND u.user_name like ('%',#{userName},'%')
-      </if>
-      <if test="majorId!=null and majorId!=0">
-          AND mi.id=#{majorId}
-      </if>
-      <if test="majorId!=null and majorId!=0">
-          AND iwt.teacher_id=#{teacherId}
-      </if>
+        SELECT DISTINCT
+        iibs.relation_student_id,
+        u.user_name AS userName,
+        u.user_avatar AS userAvatar,
+        si.student_number AS studentNumber,
+        gi.grade_year AS gradeYear,
+        mi.major_name AS majorName,
+        mi.id AS majorId
+        FROM  internship_info_by_student AS iibs
+        LEFT JOIN internship_plan_info AS ipi ON iibs.relation_plan_id=ipi.id
+        LEFT JOIN report_with_student AS rws ON rws.relation_plan_id=ipi.id
+        LEFT JOIN internship_with_teacher AS iwt ON ipi.id=iwt.relation_plan_id
+        LEFT JOIN major_info AS mi ON ipi.major_id=mi.id
+        LEFT JOIN grade_info AS gi ON ipi.school_id=gi.school_id
+        LEFT JOIN student_info AS si ON iibs.relation_student_id=si.id
+        LEFT JOIN `user` AS u ON si.user_id=u.id
+        WHERE
+        rws.deleted=0
+        <if test="teacherId!=null and teacherId!=0">
+            AND iwt.teacher_id=#{teacherId}
+        </if>
+        <if test="reportType!=null and reportType!=0">
+            AND iibs.relation_student_id NOT IN(SELECT DISTINCT student_id FROM report_with_student where report_type=#{reportType}
+            <if test="createTime!=null and createTime!=''">
+                AND date_format(create_time, '%Y-%m-%d')= #{createTime}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                AND start_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                AND end_time &lt; #{endTime}
+            </if>
+            <if test="month!=null and month!=''">
+                AND `month`=#{month}
+            </if>)
+        </if>
+        <if test="userName!=null and userName!=''">
+            AND u.user_name like ('%',#{userName},'%')
+        </if>
+        <if test="majorName!=null and majorName!=0">
+            AND  mi.major_name=#{majorName}
+        </if>
+        ORDER BY gi.grade_year, mi.major_name DESC
+        limit #{start},#{size}
     </select>
     <select id="getStatisticsList" resultType="com.above.dto.ReportWithStudentDto">
-      SELECT DISTINCT
-      iibs.relation_student_id AS studentId,
-      u.user_name AS userName,
-      u.user_avatar AS userAvatar,
-      rws.create_time AS createTime,
-      rws.report_type AS  rws.reportType,
-      rws.title AS title,
-      rws.content AS content,
-      rws.`status` AS status,
-      mi.id AS majorId
-      FROM internship_info_by_student AS iibs
-      LEFT JOIN internship_plan_info AS ipi ON iibs.relation_plan_id=ipi.id
-      LEFT JOIN internship_with_teacher AS iwt ON ipi.id=iwt.relation_plan_id
-      LEFT JOIN major_info AS mi ON ipi.major_id=mi.id
-      LEFT JOIN grade_info AS gi ON ipi.school_id=gi.school_id
-      LEFT JOIN report_with_student AS rws ON ipi.id=rws.relation_plan_id
-      LEFT JOIN student_info AS si ON rws.student_id=si.id
-      LEFT JOIN `user` AS u ON si.user_id=u.id
-      WHERE
-      iibs.relation_student_id IN(SELECT DISTINCt student_id FROM report_with_student)
-      AND rws.deleted=0
-      AND rws.`status`IN(1,2,3,4)
-      AND rws.report_type in(1,2,3,4)
+        SELECT DISTINCT
+        u.user_name AS userName,
+        u.user_avatar AS userAvatar,
+        rws.id,
+        rws.student_id AS studentId,
+        rws.`month`,
+        rws.`week`,
+        rws.start_time AS startTime,
+        rws.end_time AS endTime,
+        rws.create_time AS createTime,
+        rws.report_type AS  reportType,
+        rws.title AS title,
+        rws.content AS content,
+        rws.`status` AS `status`,
+        mi.major_name AS majorName
+        FROM report_with_student AS rws
+        LEFT JOIN internship_plan_info AS ipi ON rws.relation_plan_id=ipi.id
+        LEFT JOIN internship_with_teacher AS iwt ON iwt.relation_plan_id=ipi.id
+        LEFT JOIN major_info AS mi ON ipi.major_id=mi.id
+        LEFT JOIN grade_info AS gi ON ipi.school_id=gi.school_id
+        LEFT JOIN student_info AS si ON rws.student_id=si.id
+        LEFT JOIN `user` AS u ON si.user_id=u.id
+        WHERE
+        rws.deleted=0
+        AND rws.`status`IN(1,2,3,4)
+        <if test="reportType==1">
+            AND rws.report_type =1
+            <if test="createTime!=null and createTime!=''">
+                AND date_format(rws.create_time, '%Y-%m-%d')= #{createTime}
+            </if>
+        </if>
+        <if test="reportType==2">
+            AND rws.report_type =2
+            <if test="startTime!=null and startTime!=''">
+                AND rws.start_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                AND rws.end_time &lt; #{endTime}
+            </if>
+        </if>
+        <if test="reportType==3">
+            AND rws.report_type =3
+            <if test="month!=null and month!=''">
+                AND rws.`month`=#{month}
+            </if>
+        </if>
+        <if test="reportType==4">
+            AND rws.report_type =4
+        </if>
         <if test="userName!=null and userName!=''">
             AND u.user_name like ('%',#{userName},'%')
         </if>
@@ -99,9 +140,8 @@
         <if test="teacherId!=null and teacherId!=0">
             AND iwt.teacher_id=#{teacherId}
         </if>
-        <if test="createTime!=null and createTime!=''">
-            AND rws.create_time&gt;#{createTime}
-        </if>
+        ORDER BY  rws.create_time DESC
+        limit #{start},#{size}
     </select>
 
     <select id="getWeeklyNewspaperTeacherList" resultType="com.above.dto.ReportWithStudentDto">
@@ -468,7 +508,7 @@
     </select>
     <select id="getWeeklyNewspaperTeacherListCount" resultType="java.lang.Integer">
         SELECT
-      COUNT(rws.id)
+        COUNT(rws.id)
         FROM report_with_student AS rws
         LEFT JOIN internship_with_teacher AS iwt on rws.relation_plan_id=iwt.relation_plan_id
         LEFT JOIN teacher_info AS ti on iwt.teacher_id=ti.id
@@ -500,5 +540,89 @@
             AND rws.`status`=#{status}
         </if>
     </select>
-
+    <select id="getgetDailyPaperStatisticsListCount" resultType="java.lang.Integer">
+        SELECT
+        COUNT(DISTINCT iibs.relation_student_id)
+        FROM  internship_info_by_student AS iibs
+        LEFT JOIN internship_plan_info AS ipi ON iibs.relation_plan_id=ipi.id
+        LEFT JOIN report_with_student AS rws ON rws.relation_plan_id=ipi.id
+        LEFT JOIN internship_with_teacher AS iwt ON ipi.id=iwt.relation_plan_id
+        LEFT JOIN major_info AS mi ON ipi.major_id=mi.id
+        LEFT JOIN grade_info AS gi ON ipi.school_id=gi.school_id
+        LEFT JOIN student_info AS si ON iibs.relation_student_id=si.id
+        LEFT JOIN `user` AS u ON si.user_id=u.id
+        WHERE
+        rws.deleted=0
+        <if test="teacherId!=null and teacherId!=0">
+            AND iwt.teacher_id=#{teacherId}
+        </if>
+        <if test="reportType!=null and reportType!=0">
+            AND iibs.relation_student_id NOT IN(SELECT DISTINCT student_id FROM report_with_student where report_type=#{reportType}
+            <if test="createTime!=null and createTime!=''">
+                AND date_format(create_time, '%Y-%m-%d')= #{createTime}
+            </if>
+            <if test="startTime!=null and startTime!=''">
+                AND start_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                AND end_time &lt; #{endTime}
+            </if>
+            <if test="month!=null and month!=''">
+                AND `month`=#{month}
+            </if>)
+        </if>
+        <if test="userName!=null and userName!=''">
+            AND u.user_name like ('%',#{userName},'%')
+        </if>
+        <if test="majorName!=null and majorName!=0">
+            AND  mi.major_name=#{majorName}
+        </if>
+    </select>
+    <select id="getStatisticsListCount" resultType="java.lang.Integer">
+        SELECT
+        COUNT(DISTINCT rws.id)
+        FROM report_with_student AS rws
+        LEFT JOIN internship_plan_info AS ipi ON rws.relation_plan_id=ipi.id
+        LEFT JOIN internship_with_teacher AS iwt ON iwt.relation_plan_id=ipi.id
+        LEFT JOIN major_info AS mi ON ipi.major_id=mi.id
+        LEFT JOIN grade_info AS gi ON ipi.school_id=gi.school_id
+        LEFT JOIN student_info AS si ON rws.student_id=si.id
+        LEFT JOIN `user` AS u ON si.user_id=u.id
+        WHERE
+        rws.deleted=0
+        AND rws.`status`IN(1,2,3,4)
+        <if test="reportType==1">
+            AND rws.report_type =1
+            <if test="createTime!=null and createTime!=''">
+                AND date_format(rws.create_time, '%Y-%m-%d')= #{createTime}
+            </if>
+        </if>
+        <if test="reportType==2">
+            AND rws.report_type =2
+            <if test="startTime!=null and startTime!=''">
+                AND rws.start_time &gt; #{startTime}
+            </if>
+            <if test="endTime!=null and endTime!=''">
+                AND rws.end_time &lt; #{endTime}
+            </if>
+        </if>
+        <if test="reportType==3">
+            AND rws.report_type =3
+            <if test="month!=null and month!=''">
+                AND rws.`month`=#{month}
+            </if>
+        </if>
+        <if test="reportType==4">
+            AND rws.report_type =4
+        </if>
+        <if test="userName!=null and userName!=''">
+            AND u.user_name like ('%',#{userName},'%')
+        </if>
+        <if test="majorId!=null and majorId!=0">
+            AND mi.id=#{majorId}
+        </if>
+        <if test="teacherId!=null and teacherId!=0">
+            AND iwt.teacher_id=#{teacherId}
+        </if>
+    </select>
 </mapper>

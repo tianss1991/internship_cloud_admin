@@ -1119,11 +1119,14 @@ public CommonResult<Object> countCheck(InternshipApplicationVo vo, UserDto userD
         vo.setPlanId(planId);
         vo.setTeacherId(teacherId);
         List<InternshipInfoFillDto> list = this.baseMapper.getInternshipApplyInfoFilled(vo);
-        Integer count = this.baseMapper.getInternshipApplyInfoFilledCount(vo);
+        Integer filledCount = this.baseMapper.getInternshipApplyInfoFilledCount(vo);
+        Integer UnfilledCount = this.baseMapper.getInternshipApplyInfoUnFillCount(vo);
         Map<String,Object> map = new HashMap<>();
         map.put(BaseVo.LIST,list);
-        map.put(BaseVo.TOTAL,count);
-        map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),count));
+        map.put(BaseVo.TOTAL,filledCount);
+        map.put("filledCount",filledCount);
+        map.put("UnfilledCount",UnfilledCount);
+        map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),filledCount));
         return CommonResult.success(map);
     }
     
@@ -1141,11 +1144,14 @@ public CommonResult<Object> countCheck(InternshipApplicationVo vo, UserDto userD
         vo.setPlanId(planId);
         vo.setTeacherId(teacherId);
         List<InternshipInfoFillDto> list = this.baseMapper.getInternshipApplyInfoUnFill(vo);
-        Integer count = this.baseMapper.getInternshipApplyInfoUnFillCount(vo);
+        Integer filledCount = this.baseMapper.getInternshipApplyInfoFilledCount(vo);
+        Integer UnfilledCount = this.baseMapper.getInternshipApplyInfoUnFillCount(vo);
         Map<String,Object> map = new HashMap<>();
         map.put(BaseVo.LIST,list);
-        map.put(BaseVo.TOTAL,count);
-        map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),count));
+        map.put(BaseVo.TOTAL,UnfilledCount);
+        map.put("filledCount",filledCount);
+        map.put("UnfilledCount",UnfilledCount);
+        map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),UnfilledCount));
         return CommonResult.success(map);
     }
 }

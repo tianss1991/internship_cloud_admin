@@ -20,7 +20,6 @@ import java.util.List;
 public interface ReportWithStudentMapper extends BaseMapper<ReportWithStudent> {
     //查看日报详情（学生端）
     ReportWithStudentDto getDailyPaperStudent(ReportWithStudentVo vo);
-
     //统计日报-未写(教师端)
     List<ReportWithStudentDto>  getDailyPaperStatisticsList(ReportWithStudentVo vo);
     //统计日报-已写(教师端)
@@ -51,4 +50,8 @@ public interface ReportWithStudentMapper extends BaseMapper<ReportWithStudent> {
     Integer getDailyPaperListCount(ReportWithStudentVo vo);
     //查询日/周/月报/实习总结总数(教师端)
     Integer getWeeklyNewspaperTeacherListCount(ReportWithStudentVo vo);
+    //统计日报-未写总数
+    Integer getgetDailyPaperStatisticsListCount(ReportWithStudentVo vo);
+    //统计日报-已写总数
+    Integer getStatisticsListCount(ReportWithStudentVo vo);
 }

@@ -32,7 +32,7 @@ WHERE
 	<if test="gradeId != null">
 		AND ipi.grade_id = #{gradeId}
 	</if>
-	<if test="key != null">
+	<if test="key != null and key != '' ">
 		AND ipi.plan_title like concat('%',#{key},'%')
 	</if>
 	<if test="status != null">
@@ -95,7 +95,7 @@ FROM
 		<if test="gradeId != null">
 			AND a.grade_id = #{gradeId}
 		</if>
-		<if test="key != null">
+		<if test="key != null and key != '' ">
 			AND a.plan_title like concat('%',#{key},'%')
 		</if>
 	<if test="status == 0">
@@ -138,7 +138,9 @@ LIMIT #{start},#{size}
 		ipi.month_word_count AS monthWordCount,
 		ipi.summarize_count AS summarizeCount,
 		ipi.summarize_word_count AS summarizeWordCount,
-		ipi.`status` AS status
+		ipi.`status` AS status,
+		ti.teacher_name as teacherName,
+		ti.id as teacherId
 		FROM
 		internship_plan_info ipi
 		LEFT JOIN major_info mi ON ipi.major_id = mi.id
@@ -147,10 +149,17 @@ LIMIT #{start},#{size}
 		AND gi.deleted = 0
 		LEFT JOIN school_info si ON si.id = ipi.school_id 	AND si.deleted = 0
 		LEFT JOIN department_info di ON di.id = ipi.department_id  	AND di.deleted = 0
+		LEFT JOIN internship_with_teacher iwt ON iwt.relation_plan_id = ipi.id
+		AND iwt.deleted = 0
+		LEFT JOIN teacher_info ti ON ti.id = iwt.teacher_id
+		AND ti.deleted = 0
 		WHERE
 		ipi.deleted = 0
 		<if test="planId != null">
 			AND ipi.id = #{planId}
+		</if>
+		<if test="teacherId != null">
+			AND iwt.teacher_id = #{teacherId}
 		</if>
 	</select>
 	<select id="getAllotInternshipPlanInfoListCount" resultType="java.lang.Integer">
@@ -193,7 +202,7 @@ LIMIT #{start},#{size}
 			<if test="gradeId != null">
 				AND a.grade_id = #{gradeId}
 			</if>
-			<if test="key != null">
+			<if test="key != null and key != ' ' ">
 				AND a.plan_title like concat('%',#{key},'%')
 			</if>
 			<if test="status == 0">
@@ -227,7 +236,7 @@ LIMIT #{start},#{size}
 		<if test="gradeId != null">
 			AND ipi.grade_id = #{gradeId}
 		</if>
-		<if test="key != null">
+		<if test="key != null and key != ''">
 			AND ipi.plan_title like concat('%',#{key},'%')
 		</if>
 		<if test="status != null">
@@ -266,12 +275,90 @@ GROUP BY
 		    ti.teacher_name as teacherName
 		from
 		     internship_with_student iws
-				 LEFT JOIN internship_plan_info ipi on iws.relation_plan_id = ipi.id
+				 LEFT JOIN internship_plan_info ipi on iws.relation_plan_id = ipi.id  AND ipi.deleted = 0
 			 LEFT JOIN teacher_info ti ON ti.id = iws.relation_teacher_id
 				 AND ti.deleted = 0
 		where
-		      iws.relation_student_id = #{studentId}
+		    iws.deleted = 0
+		    AND iws.relation_student_id = #{studentId}
 			AND ipi.start_time &lt;= #{startTime}
 			and ipi.end_time &gt;= #{startTime}
+	</select>
+	<select id="getPlanInfoByTeacher" resultType="com.above.dto.SimplePlanInfoDto">
+		SELECT
+		ipi.id as id,
+		ipi.plan_title as planTitle,
+		iwt.teacher_id AS teacherId,
+		ti.teacher_name AS teacherName,
+		ipi.start_time as startTime,
+		ipi.end_time as endTime
+		FROM
+		internship_with_teacher iwt
+		LEFT JOIN internship_plan_info ipi ON iwt.relation_plan_id = ipi.id
+		LEFT JOIN teacher_info ti ON ti.id = iwt.teacher_id
+		AND ti.deleted = 0
+		AND ipi.deleted = 0
+		WHERE
+		iwt.deleted = 0
+		AND iwt.teacher_id = #{teacherId}
+		<if test="key != null and key != '' ">
+			AND ipi.plan_title like CONCAT ('%',#{key},'%')
+		</if>
+	</select>
+    <select id="getPlanInfoByStudentId" resultType="com.above.dto.SimplePlanInfoDto">
+	SELECT
+		ipi.id AS id,
+		ipi.plan_title AS planTitle,
+		iws.relation_teacher_id AS teacherId,
+		ti.teacher_name AS teacherName,
+		ipi.start_time AS startTime,
+		ipi.end_time AS endTime
+	FROM
+		internship_with_student iws
+		LEFT JOIN internship_plan_info ipi ON iws.relation_plan_id = ipi.id
+		LEFT JOIN teacher_info ti ON ti.id = iws.relation_teacher_id
+		AND ti.deleted = 0
+		AND ipi.deleted = 0
+	WHERE
+		iws.deleted = 0
+		AND iws.relation_student_id = #{studentId}
+		<if test="key != null and key != '' ">
+			AND ipi.plan_title like CONCAT ('%',#{key},'%')
+		</if>
+	</select>
+	<select id="getStudentInfoByStudent" resultType="com.above.dto.SimpleStudentInfoDto">
+		SELECT
+	u.id AS id,
+	u.user_name AS userName,
+	u.user_avatar AS userAvatar,
+	uc.account_number AS number,
+	uc.sign AS sign,
+	uc.gender AS gender,
+	uc.birth AS birth,
+	uc.address AS address,
+	uc.telephone AS telephone,
+	uc.email AS email
+FROM
+	`user` u
+	LEFT JOIN user_account uc ON u.id = uc.user_id
+	AND uc.deleted = 0
+WHERE
+	u.deleted = 0
+	AND u.id = #{userId}
+	</select>
+	<select id="getInternshipScoreById" resultType="com.above.dto.InternshipScoreDto">
+		SELECT
+			gt.content as content,
+			gt.score as score
+		FROM
+			internship_plan_info ipi
+			LEFT JOIN grade_template gt ON gt.plan_id = ipi.id
+			AND gt.deleted = 0
+		WHERE
+			ipi.deleted = 0
+			<if test="planId != null">
+				AND gt.plan_id = #{planId}
+			</if>
+			AND gt.pid IS NULL
 	</select>
 </mapper>

@@ -43,50 +43,31 @@ public class SignApplyInfoController {
     @ApiOperation("学生提交补签申请")
     @PostMapping("submitSignApply")
     @RequiresRoles(value = {"student"},logical = Logical.OR)
-    public CommonResult<Object> submitSignApply(HttpServletRequest request, @RequestBody SignInfoVo vo){
+    public CommonResult<Object> submitSignApply(HttpServletRequest request, @RequestBody SignInfoVo vo) {
 
         //获取当前用户
         UserDto userDto = (UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
 
-        if (vo == null){
-            return CommonResult.error(500,"缺少参数");
+        if (vo == null) {
+            return CommonResult.error(500, "缺少参数");
         }
-        if (vo.getSignId() == null){
-            return CommonResult.error(500,"缺少签到id");
+        if (vo.getSignId() == null) {
+            return CommonResult.error(500, "缺少签到id");
         }
-        if (StringUtils.isBlank(vo.getReason())){
-            return CommonResult.error(500,"缺少补卡原因");
-        }
-
-        if (vo.getSignDateTime() == null){
-            return CommonResult.error(500,"缺少补卡时间");
+        if (StringUtils.isBlank(vo.getReason())) {
+            return CommonResult.error(500, "缺少补卡原因");
         }
 
-        return applyInfoService.submitSignApply(userDto,vo);
-    }
-
-    /**
-     * @Description: 学生补签申请
-     * @Author: LZH
-     * @Date: 2022/7/11 14:36
-     */
-    @ApiOperation("学生修改补签申请")
-    @PostMapping("modifySignApply")
-    @RequiresRoles(value = {"student"},logical = Logical.OR)
-    public CommonResult<Object> modifySignApply(HttpServletRequest request, @RequestBody SignInfoVo vo){
-
-        //获取当前用户
-        UserDto userDto = (UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
-
-        if (vo == null){
-            return CommonResult.error(500,"缺少参数");
+        if (vo.getSignDateTime() == null) {
+            return CommonResult.error(500, "缺少补卡时间");
         }
-        if (vo.getApplyId() == null){
-            return CommonResult.error(500,"缺少签到id");
+        /*用applyId判断是否为修改 实习指导*/
+        if (vo.getApplyId() == null) {
+            return applyInfoService.submitSignApply(userDto, vo);
+        } else {
+            return applyInfoService.modifySignApply(userDto, vo);
         }
 
-
-        return applyInfoService.modifySignApply(userDto,vo);
     }
 
 

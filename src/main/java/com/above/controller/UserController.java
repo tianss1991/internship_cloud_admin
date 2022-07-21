@@ -8,6 +8,7 @@ import com.above.po.AuthRole;
 import com.above.service.UserService;
 import com.above.utils.CommonResult;
 import com.above.utils.MyStringUtils;
+import com.above.vo.InternshipPlanInfoVo;
 import com.above.vo.user.UpdateUserVo;
 import com.above.vo.user.UserVo;
 import io.swagger.annotations.Api;
@@ -85,6 +86,21 @@ public class UserController {
         return userService.getUserInfoByToken(request);
 
     }
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 11:50
+    *@function:拿到教师实习计划并放到token中
+    */
+    @ApiOperation("拿到教师实习计划并放到token中")
+    @GetMapping("getInternshipPlanInfoByTeacher")
+    public CommonResult<Object> getInternshipPlanInfoByTeacher(HttpServletRequest request, InternshipPlanInfoVo vo) {
+        if(vo.getPlanId() == null){
+            return CommonResult.error(500,"缺少实习计划参数");
+        }
+        return userService.getInternshipPlanInfoByTeacher(request,vo);
+    }
+
 
     /**
      * @Description: 修改用户密码

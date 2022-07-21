@@ -26,11 +26,20 @@ public class ReportWithStudentDto {
     @ApiModelProperty(value = "学生id")
     private Integer studentId;
 
-    @ApiModelProperty(value = "专业id")
-    private Integer majorId;
+    @ApiModelProperty(value = "专业名称")
+    private String majorName;
+
+    @ApiModelProperty(value = "年级名称（比如2022级，四位年份数字+级）")
+    private String gradeYear;
+
+    @ApiModelProperty(value = "月份（只有月报有）")
+    private String month;
 
     @ApiModelProperty(value = "关联实习计划id")
     private Integer relationPlanId;
+
+    @ApiModelProperty(value = "学号")
+    private String studentNumber;
 
     @ApiModelProperty(value = "日报状态 0-待提交 1-未阅 2-驳回 3-已批阅 4-已阅")
     private Integer status;
@@ -65,7 +74,7 @@ public class ReportWithStudentDto {
     @ApiModelProperty(value = "评分（共10份，2分一颗星）")
     private Integer score;
 
-    @JsonFormat(pattern = "yyy-MM-dd HH:mm")
+    @JsonFormat(pattern = "yyy-MM-dd")
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 

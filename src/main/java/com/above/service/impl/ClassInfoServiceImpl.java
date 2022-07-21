@@ -193,53 +193,53 @@ public class ClassInfoServiceImpl extends ServiceImpl<ClassInfoMapper, ClassInfo
                 flag = true;
             }
         }
+        /*判断新老数组是否一致，删除掉一样的元素*/
+        HashSet<Integer> teacherIds = new HashSet<>(teacherIdList);
+        teacherIds.removeAll(deleteTeacherIdList);
+        teacherIdList = new ArrayList<>(teacherIds);
+        HashSet<Integer> deletedTeacherIds = new HashSet<>(deleteTeacherIdList);
+        deletedTeacherIds.removeAll(teacherIdList);
+        deleteTeacherIdList = new ArrayList<>(deletedTeacherIds);
+
+        //判断教师id是否有传，没有传直接跳过添加校领导
+        if (teacherIdList.size()>0){
+            CommonResult<Object> result = addClassLeader(userDto.getId(), classVo.getTeacherIdList(), classId, 1);
+            if (!result.isSuccess()){
+                return result;
+            }
+        }
+        if(deleteTeacherIdList.size() > 0){
+            // 删除辅导员
+            CommonResult<Object> objectCommonResult = this.deleteClassLeader(updateBy,deleteTeacherIdList,classId,1);
+            //判断删除辅导员是否成功
+            if (!objectCommonResult.isSuccess()){
+                return objectCommonResult;
+            }
+        }
+        //判断修改班主任信息
+        if(!StringUtils.isBlank(classVo.getClassTeacherName())){
+            LambdaQueryWrapper<ClassTeacherRelation> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(ClassTeacherRelation::getRelationType,2).eq(ClassTeacherRelation::getDeleted, UserVo.UNDELETE)
+                    .eq(ClassTeacherRelation::getClassId,classId);
+            ClassTeacherRelation one = classTeacherRelationService.getOne(queryWrapper);
+            if (one != null){
+                if (!one.getTeacherName().equals(classVo.getClassTeacherName())) {
+                    one.setTeacherName(classVo.getClassTeacherName());
+                    classTeacherRelationService.updateById(one);
+                }
+            }else {
+                ClassTeacherRelation relation = new ClassTeacherRelation();
+                relation.setRelationType(2).setTeacherName(classVo.getClassTeacherName());
+                relation.setClassId(classId).setDeleted(BaseVo.UNDELETE);
+                classTeacherRelationService.save(relation);
+            }
+        }
         //判断是否有执行更新
         if (flag) {
             classInfo.setUpdateBy(updateBy);
             //更新数据库
             boolean b = super.updateById(classInfo);
             if (b) {
-                /*判断新老数组是否一致，删除掉一样的元素*/
-                HashSet<Integer> teacherIds = new HashSet<>(teacherIdList);
-                teacherIds.removeAll(deleteTeacherIdList);
-                teacherIdList = new ArrayList<>(teacherIds);
-                HashSet<Integer> deletedTeacherIds = new HashSet<>(deleteTeacherIdList);
-                deletedTeacherIds.removeAll(teacherIdList);
-                deleteTeacherIdList = new ArrayList<>(deletedTeacherIds);
-
-                //判断教师id是否有传，没有传直接跳过添加校领导
-                if (teacherIdList.size()>0){
-                    CommonResult<Object> result = addClassLeader(userDto.getId(), classVo.getTeacherIdList(), classId, 1);
-                    if (!result.isSuccess()){
-                        return result;
-                    }
-                }
-                if(deleteTeacherIdList.size() > 0){
-                    // 删除辅导员
-                    CommonResult<Object> objectCommonResult = this.deleteClassLeader(updateBy,deleteTeacherIdList,classId,1);
-                    //判断删除辅导员是否成功
-                    if (!objectCommonResult.isSuccess()){
-                        return objectCommonResult;
-                    }
-                }
-                //判断修改班主任信息
-                if(!StringUtils.isBlank(classVo.getClassTeacherName())){
-                    LambdaQueryWrapper<ClassTeacherRelation> queryWrapper = new LambdaQueryWrapper<>();
-                    queryWrapper.eq(ClassTeacherRelation::getRelationType,2).eq(ClassTeacherRelation::getDeleted, UserVo.UNDELETE)
-                                .eq(ClassTeacherRelation::getClassId,classId);
-                    ClassTeacherRelation one = classTeacherRelationService.getOne(queryWrapper);
-                    if (one != null){
-                        if (!one.getTeacherName().equals(classVo.getClassTeacherName())) {
-                            one.setTeacherName(classVo.getClassTeacherName());
-                            classTeacherRelationService.updateById(one);
-                        }else {
-                            ClassTeacherRelation relation = new ClassTeacherRelation();
-                            relation.setRelationType(2).setTeacherName(classVo.getClassTeacherName());
-                            relation.setClassId(classId).setDeleted(BaseVo.UNDELETE);
-                            classTeacherRelationService.save(relation);
-                        }
-                    }
-                }
                 return CommonResult.success("修改成功", null);
             } else {
                 throw new RuntimeException("修改失败,请重试");
@@ -874,34 +874,36 @@ public class ClassInfoServiceImpl extends ServiceImpl<ClassInfoMapper, ClassInfo
             }
         }
         List<Integer> teacherIds = list.stream().map(ClassTeacherRelation::getTeacherId).collect(Collectors.toList());
-        List<TeacherInfo> teacherInfos = teacherInfoMapper.selectBatchIds(teacherIds);
-        //获取教师的userId
-        List<Integer> userIds = teacherInfos.stream().map(TeacherInfo::getUserId).collect(Collectors.toList());
-        LambdaQueryWrapper<AuthUserRole> roleQueryWrapper = new LambdaQueryWrapper<>();
-        roleQueryWrapper.in(AuthUserRole::getUserId,userIds).eq(AuthUserRole::getDeleted,BaseVo.UNDELETE);
-        List<AuthUserRole> authUserRoles = authUserRoleService.list(roleQueryWrapper);
+        if (teacherIds.size() > 0){
+            List<TeacherInfo> teacherInfos = teacherInfoMapper.selectBatchIds(teacherIds);
+            //获取教师的userId
+            List<Integer> userIds = teacherInfos.stream().map(TeacherInfo::getUserId).collect(Collectors.toList());
+            LambdaQueryWrapper<AuthUserRole> roleQueryWrapper = new LambdaQueryWrapper<>();
+            roleQueryWrapper.in(AuthUserRole::getUserId,userIds).eq(AuthUserRole::getRoleId,4).eq(AuthUserRole::getDeleted,BaseVo.UNDELETE);
+            List<AuthUserRole> authUserRoles = authUserRoleService.list(roleQueryWrapper);
 
-        //获取教师关联的其他信息
-        LambdaQueryWrapper<ClassTeacherRelation> otherQueryWrapper = new LambdaQueryWrapper<>();
-        otherQueryWrapper.in(ClassTeacherRelation::getTeacherId,teacherIds)
-                .eq(ClassTeacherRelation::getRelationType,1).eq(ClassTeacherRelation::getDeleted,BaseVo.UNDELETE);
-        List<ClassTeacherRelation> otherRelations = classTeacherRelationService.list(queryWrapper);
-        //删除辅导员权限
-        for (TeacherInfo info:teacherInfos) {
-            for (ClassTeacherRelation data:otherRelations) {
-                if (data.getTeacherId().equals(info.getId())){
-                    //筛选出不等于当前教师的
-                    authUserRoles = authUserRoles.stream().filter(x -> !x.getUserId().equals(info.getId())).collect(Collectors.toList());
-                    break;
+            //获取教师关联的其他信息
+            LambdaQueryWrapper<ClassTeacherRelation> otherQueryWrapper = new LambdaQueryWrapper<>();
+            otherQueryWrapper.in(ClassTeacherRelation::getTeacherId,teacherIds)
+                    .eq(ClassTeacherRelation::getRelationType,1).eq(ClassTeacherRelation::getDeleted,BaseVo.UNDELETE);
+            List<ClassTeacherRelation> otherRelations = classTeacherRelationService.list(queryWrapper);
+            //删除辅导员权限
+            for (TeacherInfo info:teacherInfos) {
+                for (ClassTeacherRelation data:otherRelations) {
+                    if (data.getTeacherId().equals(info.getId())){
+                        //筛选出不等于当前教师的
+                        authUserRoles = authUserRoles.stream().filter(x -> !x.getUserId().equals(info.getUserId())).collect(Collectors.toList());
+                        break;
+                    }
                 }
             }
-        }
 
-        if (authUserRoles.size() > 0){
-            authUserRoles.forEach(info -> info.setDeleted(BaseVo.DELETE).setUpdateBy(updateBy));
-            boolean b = authUserRoleService.updateBatchById(authUserRoles);
-            if (!b){
-                throw new OptionDateBaseException("教师权限删除失败");
+            if (authUserRoles.size() > 0){
+                authUserRoles.forEach(info -> info.setDeleted(BaseVo.DELETE).setUpdateBy(updateBy));
+                boolean b = authUserRoleService.updateBatchById(authUserRoles);
+                if (!b){
+                    throw new OptionDateBaseException("教师权限删除失败");
+                }
             }
         }
         return true;
@@ -975,6 +977,11 @@ public class ClassInfoServiceImpl extends ServiceImpl<ClassInfoMapper, ClassInfo
                     teacherInfo = data;
                 }
             }
+
+            if(teacherInfo == null){
+                teacherInfo = teacherInfoMapper.selectById(info.getTeacherId());
+            }
+
             //设置更新人
             info.setUpdateBy(updateBy).setDeleted(BaseVo.DELETE);
             //辅导员需要判断权限
@@ -1088,15 +1095,15 @@ public class ClassInfoServiceImpl extends ServiceImpl<ClassInfoMapper, ClassInfo
         }
         //循环结束批量添加
         if (authUserRoles.size() > 0){
-            boolean b = authUserRoleService.updateBatchById(authUserRoles);
+            boolean b = authUserRoleService.saveBatch(authUserRoles);
             if (!b){
-                return CommonResult.error(500,"权限删除失败");
+                return CommonResult.error(500,"权限添加失败");
             }
         }
         if (relationlist.size() > 0){
-            boolean b = classTeacherRelationService.updateBatchById(relationlist);
+            boolean b = classTeacherRelationService.saveBatch(relationlist);
             if (!b){
-                return CommonResult.error(500,"权限删除失败");
+                return CommonResult.error(500,"权限添加失败");
             }
         }
         log.info("添加角色成功");

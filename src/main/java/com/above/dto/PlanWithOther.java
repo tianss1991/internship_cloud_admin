@@ -17,6 +17,9 @@ public class PlanWithOther {
     @ApiModelProperty(value = "实习计划编号")
     private Integer id;
 
+    @ApiModelProperty(value = "实习计划编号")
+    private Integer planTitle;
+
     @ApiModelProperty(value = "开始时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH-mm-ss",timezone = "GMT+8")
     private Date startTime;
@@ -46,5 +49,7 @@ public class PlanWithOther {
     @ApiModelProperty(value = "班级名称")
     private String className;
 
+    @ApiModelProperty(value = "成绩评定")
+    private String gradePerformance;
 
 }

@@ -24,4 +24,12 @@ public interface GradeTemplateService extends IService<GradeTemplate> {
      * @return 返回值
      */
     CommonResult<Object> getGradeTemplateByPlanId(BaseVo vo, UserDto userDto);
+
+    /**
+     *  获取实习计划列表
+     * @param vo  前端参数
+     * @param userDto 用户
+     * @return 返回值
+     */
+    CommonResult<Object> getPlanWithTemplate(BaseVo vo, UserDto userDto);
 }

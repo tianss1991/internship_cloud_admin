@@ -30,7 +30,7 @@
                     and lai.status in (2,3)
                 </if>
             </if>
-            <if test="key != null">
+            <if test="key != null and key != ''">
                 and s.student_name like concat ('%',#{key},'%')
             </if>
             <if test="teacherId != null">

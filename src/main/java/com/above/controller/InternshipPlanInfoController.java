@@ -6,6 +6,7 @@ import com.above.po.InternshipPlanInfo;
 import com.above.service.InternshipPlanInfoService;
 import com.above.utils.CommonResult;
 import com.above.utils.MyStringUtils;
+import com.above.vo.BaseVo;
 import com.above.vo.InternshipApplicationVo;
 import com.above.vo.InternshipPlanInfoVo;
 import io.swagger.annotations.Api;
@@ -41,7 +42,7 @@ public class InternshipPlanInfoController {
      * @Author: GG
      * @Date: 2022/7/12 15:25
      */
-    @ApiOperation("新增或修改实习计划")
+    @ApiOperation("新增或修改实习计划(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("employmentReportedSubmitOrUpdate")
     public CommonResult<Object> employmentReportedSubmitOrUpdate(HttpServletRequest request, @RequestBody InternshipPlanInfoVo vo){
@@ -159,7 +160,7 @@ public class InternshipPlanInfoController {
     *@data: 2022/7/13 15:25
     *@function:根据实习计划id拿到内容
     */
-    @ApiOperation("根据实习计划id拿到内容")
+    @ApiOperation("根据实习计划id拿到内容(通用)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @GetMapping("getInternshipPlanInfoById")
     public CommonResult<Object> getInternshipPlanInfoById(HttpServletRequest request, InternshipPlanInfoVo vo){
@@ -168,6 +169,9 @@ public class InternshipPlanInfoController {
         //获取vo参数
         if(vo.getPlanId() == null){
             return CommonResult.error(500,"缺少实习计划id");
+        }
+        if(vo.getTeacherId() == null){
+            return CommonResult.error(500,"缺少教师id");
         }
 //        try{
             return internshipPlanInfoService.getInternshipPlanInfoById(vo,userDto);
@@ -182,7 +186,7 @@ public class InternshipPlanInfoController {
      * @Author: GG
      * @Date: 2022/7/13 15:25
      */
-    @ApiOperation("审核实习计划")
+    @ApiOperation("审核实习计划(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("checkInternshipPlanInfo")
     public CommonResult<Object> checkInternshipPlanInfo(HttpServletRequest request, @RequestBody InternshipPlanInfoVo vo){
@@ -205,7 +209,7 @@ public class InternshipPlanInfoController {
      * @Author: GG
      * @Date: 2022/7/13 15:25
      */
-    @ApiOperation("撤回实习计划")
+    @ApiOperation("撤回实习计划(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("withdrawInternshipPlanInfoList")
     public CommonResult<Object> withdrawInternshipPlanInfoList(HttpServletRequest request, @RequestBody InternshipPlanInfoVo vo){
@@ -228,7 +232,7 @@ public class InternshipPlanInfoController {
      * @Author: GG
      * @Date: 2022/7/13 15:25
      */
-    @ApiOperation("删除实习计划")
+    @ApiOperation("删除实习计划(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("deleteInternshipPlanInfo")
     public CommonResult<Object> deleteInternshipPlanInfo(HttpServletRequest request, @RequestBody InternshipPlanInfoVo vo){
@@ -251,7 +255,7 @@ public class InternshipPlanInfoController {
      * @Author: GG
      * @Date: 2022/7/13 15:25
      */
-    @ApiOperation("实习计划列表")
+    @ApiOperation("实习计划列表(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @GetMapping("internshipPlanInfoList")
     public CommonResult<Object> internshipPlanInfoList(HttpServletRequest request, InternshipPlanInfoVo vo){
@@ -269,7 +273,7 @@ public class InternshipPlanInfoController {
     *@data: 2022/7/14 10:36
     *@function:分配实习计划
     */
-    @ApiOperation("分配实习计划")
+    @ApiOperation("分配实习计划(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("allotInternshipPlanInfo")
     public CommonResult<Object> allotInternshipPlanInfo(HttpServletRequest request, @RequestBody InternshipPlanInfoVo vo){
@@ -300,7 +304,7 @@ public class InternshipPlanInfoController {
     *@data: 2022/7/14 13:52
     *@function:删除实习计划分配
     */
-    @ApiOperation("删除实习计划分配")
+    @ApiOperation("删除实习计划分配(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("deleteAllotInternshipPlanInfo")
     public CommonResult<Object> deleteAllotInternshipPlanInfo(HttpServletRequest request, @RequestBody InternshipPlanInfoVo vo){
@@ -331,7 +335,7 @@ public class InternshipPlanInfoController {
     *@data: 2022/7/14 15:13
     *@function:编辑实习计划分配
     */
-    @ApiOperation("编辑实习计划分配")
+    @ApiOperation("编辑实习计划分配(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @PostMapping("modifyAllotInternshipPlanInfo")
     public CommonResult<Object> modifyAllotInternshipPlanInfo(HttpServletRequest request, @RequestBody InternshipPlanInfoVo vo){
@@ -368,7 +372,7 @@ public class InternshipPlanInfoController {
      *@data: 2022/7/15 17:13
      *@function:获取实习计划分配列表
      */
-    @ApiOperation("获取实习计划分配列表")
+    @ApiOperation("获取实习计划分配列表(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @GetMapping("getAllotInternshipPlanInfoList")
     public CommonResult<Object> getAllotInternshipPlanInfoList(HttpServletRequest request,InternshipPlanInfoVo vo){
@@ -390,7 +394,7 @@ public class InternshipPlanInfoController {
      *@data: 2022/7/15 17:13
      *@function:获取实习分配列表中已分配教师学生列表
      */
-    @ApiOperation("获取实习分配列表中已分配教师学生列表")
+    @ApiOperation("获取实习分配列表中已分配教师学生列表(PC)")
     @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
     @GetMapping("getAllotInternshipPlanTeacherAndStudentInfoList")
     public CommonResult<Object> getAllotInternshipPlanTeacherAndStudentInfoList(HttpServletRequest request,InternshipPlanInfoVo vo){
@@ -409,5 +413,73 @@ public class InternshipPlanInfoController {
 //            return CommonResult.error(500,"获取实习分配列表中已分配教师学生列表出错");
 //        }
     }
+
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 10:08
+    *@function:根据教师id拿到实习计划列表
+    */
+    @ApiOperation("根据教师id拿到实习计划列表(APP)")
+    @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
+    @GetMapping("getPlanInfoByTeacher")
+    public CommonResult<Object> getPlanInfoByTeacher(HttpServletRequest request, BaseVo vo){
+        //从session获取user
+        UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
+        //获取vo参数
+        if(vo == null){
+            return CommonResult.error(500,"缺少参数");
+        }
+//        try{
+        return internshipPlanInfoService.getPlanInfoByTeacher(vo,userDto);
+//        }catch (RuntimeException e){
+//            return CommonResult.error(500,"根据教师id拿到实习计划列表出错");
+//        }
+    }
+
+    /**
+     *@author: GG
+     *@data: 2022/7/20 10:08
+     *@function:根据学生id拿到个人资料()
+     */
+    @ApiOperation("根据学生id拿到个人资料(APP)")
+    @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
+    @GetMapping("getStudentInfoByStudent")
+    public CommonResult<Object> getStudentInfoByStudent(HttpServletRequest request, BaseVo vo){
+        //从session获取user
+        UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
+        //获取vo参数
+        if(vo == null){
+            return CommonResult.error(500,"缺少参数");
+        }
+//        try{
+        return internshipPlanInfoService.getStudentInfoByStudent(vo,userDto);
+//        }catch (RuntimeException e){
+//            return CommonResult.error(500,"根据教师id拿到实习计划列表出错");
+//        }
+    }
+
+    /**
+     *@author: GG
+     *@data: 2022/7/20 10:08
+     *@function:根据学生id拿到实习计划列表
+     */
+    @ApiOperation("根据学生id拿到实习计划列表(APP)")
+    @RequiresRoles(value = {"student","adviser","admin","schoolAdmin","departmentAdmin"}, logical = Logical.OR)
+    @GetMapping("getPlanInfoByStudentId")
+    public CommonResult<Object> getPlanInfoByStudentId(HttpServletRequest request, BaseVo vo){
+        //从session获取user
+        UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
+        //获取vo参数
+        if(vo == null){
+            return CommonResult.error(500,"缺少参数");
+        }
+//        try{
+        return internshipPlanInfoService.getPlanInfoByStudentId(vo,userDto);
+//        }catch (RuntimeException e){
+//            return CommonResult.error(500,"根据教师id拿到实习计划列表出错");
+//        }
+    }
+
 }
 

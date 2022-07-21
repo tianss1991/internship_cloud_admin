@@ -1,7 +1,9 @@
 package com.above.vo;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -13,7 +15,6 @@ import java.util.List;
 public class InternshipPlanInfoVo  {
 
     @ApiModelProperty(value = "编号")
-    @TableField("id")
     private Integer id;
 
     @ApiModelProperty(value = "教师id")

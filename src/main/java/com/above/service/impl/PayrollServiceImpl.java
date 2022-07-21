@@ -120,10 +120,16 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
         Integer id = studentInfo.getId();
         Payroll studentId = vo.setStudentId(id);
 
-        List<PayrollDto> studentPayrollList = payrollMapper.getStudentPayrollList(vo);
-
         Map<String, Object> returnMap = new HashMap<>(16);
-        returnMap.put(BaseVo.LIST,studentPayrollList);
+        List<PayrollDto> list = super.baseMapper.getStudentPayrollList(vo);
+        Integer totalCount = super.baseMapper.getStudentPayrollListCount(vo);
+        //总页数
+        returnMap.put(BaseVo.LIST, list);
+        //总数
+        returnMap.put(BaseVo.TOTAL, totalCount);
+        //返回数据
+        returnMap.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),totalCount));
+
         return CommonResult.success(returnMap);
     }
 
@@ -234,22 +240,17 @@ public class PayrollServiceImpl extends ServiceImpl<PayrollMapper, Payroll> impl
             vo.setDateTime(dateTime);
         }
 
-       /* Long page = vo.getPage();
-        if (vo.getPage() != null && vo.getPage() != 0) {
-            vo.setPage((vo.getPage() - 1) * vo.getSize());
-        }
-        List<PayrollDto> payrollList = payrollMapper.getPayroll(vo);
-
-        Integer total = this.payrollMapper.countPayroll(vo);
-*/
         Map<String, Object> returnMap = new HashMap<>(16);
 
-       /* returnMap.put("total", total);
+        List<PayrollDto> list =super.baseMapper.getPayroll(vo);
 
-        returnMap.put("list", payrollList.size() == 0 ? new ArrayList<>() : payrollList);
-
-        returnMap.put("pages", (page == null || page == 0) ? 1 : (total + vo.getSize() - 1) / vo.getSize());*/
-
+        Integer totalCount = super.baseMapper.countPayroll(vo);
+        //总页数
+        returnMap.put(BaseVo.LIST, list);
+        //总数
+        returnMap.put(BaseVo.TOTAL, totalCount);
+        //返回数据
+        returnMap.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),totalCount));
         return CommonResult.success(returnMap);
     }
 

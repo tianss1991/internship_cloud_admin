@@ -446,11 +446,4 @@ public class LeaveApplyInfoServiceImpl extends ServiceImpl<LeaveApplyInfoMapper,
         return CommonResult.success(returnMap);
     }
 
-    /**
-     *辅导员端请假申请列表中未审核数量(辅导员)
-     * */
-    @Override
-    public CommonResult<Object> unCheckleaveApplyCount(LeaveApplyInfoVo vo, UserDto userDto) {
-        return null;
-    }
 }

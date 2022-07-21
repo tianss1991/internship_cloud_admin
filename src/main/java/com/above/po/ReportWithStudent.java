@@ -112,7 +112,8 @@ public class ReportWithStudent implements Serializable {
     @TableField("create_by")
     private Integer createBy;
 
-    @DateTimeFormat(pattern = "yyy-MM-dd HH:mm")
+    @JsonFormat(pattern = "yyy-MM-dd")
+    @DateTimeFormat(pattern = "yyy-MM-dd HH:mm:ss")
     @ApiModelProperty(value = "创建时间")
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private Date createTime;

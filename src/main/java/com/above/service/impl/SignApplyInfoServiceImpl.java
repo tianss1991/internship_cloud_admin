@@ -54,7 +54,7 @@ public class SignApplyInfoServiceImpl extends ServiceImpl<SignApplyInfoMapper, S
         if (signInfoByStudent == null){
             return CommonResult.error(500,"当前状态无法申请打卡记录");
         }
-        if (signInfoByStudent.getSignStatus().equals(SignInfoByStudent.EXCEPTION)){
+        if (!signInfoByStudent.getSignStatus().equals(SignInfoByStudent.EXCEPTION)){
             return CommonResult.error(500,"当前状态无法申请打卡记录");
         }
 

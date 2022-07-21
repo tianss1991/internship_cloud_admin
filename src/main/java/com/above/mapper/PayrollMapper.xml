@@ -41,7 +41,7 @@
     </select>
 
    <select id="getPayroll" resultType="com.above.dto.PayrollDto">
-      SELECT
+      SELECT DISTINCT
       gi.grade_year AS gradeYear,
       mj.id AS majorId,
       mj.major_name AS majorName,
@@ -51,6 +51,7 @@
       si.id AS studentId,
       iibs.company_name AS companyName,
       iibs.job_name AS jobName,
+      p.id,
       p.salary AS salary,
       p.date_time as dateTime,
       p.deleted
@@ -65,41 +66,51 @@
       LEFT JOIN `class_info` AS ci on ci.id= ctr.class_id
       LEFT JOIN `grade_info` AS gi on gi.school_id=str.school_id
       WHERE
-         p.deleted=0
+      p.deleted=0
       <if test="studentName != null and studentName != ''">
-          AND si.student_name like concat ('%',#{studentName},'%')
+         AND si.student_name like concat ('%',#{studentName},'%')
       </if>
       <if test="gradeYear!=null and gradeYear != ''">
-          AND gi.grade_year=#{gradeYear}
+         AND gi.grade_year=#{gradeYear}
       </if>
       <if test="majorName!=null and majorName!= ''">
-          AND mj.major_name=#{majorName}
+         AND mj.major_name=#{majorName}
       </if>
       <if test="dateTime!=null">
          AND  p.date_time&gt;#{dateTime}
       </if>
-      ORDER BY gi.grade_year,ci.class_name,p.create_time DESC
-      <if test="page != null and page != 0">
-         limit #{page},#{size}
-      </if>
+      ORDER BY p.create_time,gi.grade_year,mj.major_name,ci.class_name DESC
+      limit  #{start},#{size}
    </select>
    <select id="countPayroll" resultType="java.lang.Integer">
-      SELECT COUNT(1) FROM `payroll` AS p            -- 工资单
-      LEFT JOIN `internship_info_by_student` AS iibs on iibs.relation_student_id=p.student_id
-      LEFT JOIN `student_info` AS si on si.id=p.student_id
-      LEFT JOIN internship_plan_info AS ipi on ipi.id=p.internship_id
-      LEFT JOIN school_teacher_relation AS str on str.school_id=ipi.school_id
-      LEFT JOIN `major_info` AS mj on mj.id=ipi.major_id
-      LEFT JOIN `class_teacher_relation` AS ctr on ctr.teacher_id=str.teacher_id
-      LEFT JOIN `class_info` AS ci on ci.id= ctr.class_id
-      LEFT JOIN `grade_info` AS gi on gi.school_id=str.school_id             -- 年级表
+      SELECT COUNT(DISTINCT p.id) FROM `payroll` AS p            -- 工资单
+      LEFT JOIN `internship_info_by_student` AS iibs on iibs.relation_student_id=p.student_id AND  iibs.deleted=0
+      LEFT JOIN `student_info` AS si on si.id=p.student_id AND si.deleted=0
+      LEFT JOIN internship_plan_info AS ipi on ipi.id=p.internship_id AND ipi.deleted=0
+      LEFT JOIN school_teacher_relation AS str on str.school_id=ipi.school_id AND str.deleted=0
+      LEFT JOIN `major_info` AS mj on mj.id=ipi.major_id AND mj.deleted=0
+      LEFT JOIN `class_teacher_relation` AS ctr on ctr.teacher_id=str.teacher_id AND ctr.deleted=0
+      LEFT JOIN `class_info` AS ci on ci.id= ctr.class_id AND ci.deleted=0
+      LEFT JOIN `grade_info` AS gi on gi.school_id=str.school_id  AND gi.deleted=0            -- 年级表
       WHERE
       p.deleted=0
-      ORDER BY gi.grade_year,ci.class_name,p.create_time
+      <if test="studentName != null and studentName != ''">
+         AND si.student_name like concat ('%',#{studentName},'%')
+      </if>
+      <if test="gradeYear!=null and gradeYear != ''">
+         AND gi.grade_year=#{gradeYear}
+      </if>
+      <if test="majorName!=null and majorName!= ''">
+         AND mj.major_name=#{majorName}
+      </if>
+      <if test="dateTime!=null">
+         AND  p.date_time&gt;#{dateTime}
+      </if>
    </select>
    <select id="getStudentPayrollList" resultType="com.above.dto.PayrollDto">
       SELECT
       p.id,
+      p.`create_time`,
       p.student_id AS studentId,
       iibs.company_name AS companyName,
       p.date_time AS dateTime
@@ -107,9 +118,12 @@
       LEFT JOIN internship_info_by_student AS iibs ON p.student_id=iibs.relation_student_id
       WHERE p.deleted=0
       AND iibs.deleted=0
-      <if test="studentId!=null || studentId!=0" >
+      <if test="studentId!=null and studentId!=0" >
          AND p.student_id=#{studentId}
       </if>
+      ORDER BY p.create_time DESC
+      limit #{start},#{size}
+
    </select>
    <select id="getInstructorPayrollListCount" resultType="java.lang.Integer">
       SELECT
@@ -137,6 +151,17 @@
       </if>
       <if test="teacherId !=null" >
          AND iwt.teacher_id =#{teacherId}
+      </if>
+   </select>
+   <select id="getStudentPayrollListCount" resultType="java.lang.Integer">
+      SELECT
+      COUNT(p.id)
+      FROM payroll AS p
+      LEFT JOIN internship_info_by_student AS iibs ON p.student_id=iibs.relation_student_id
+      WHERE p.deleted=0
+      AND iibs.deleted=0
+      <if test="studentId!=null and studentId!=0" >
+         AND p.student_id=#{studentId}
       </if>
    </select>
 

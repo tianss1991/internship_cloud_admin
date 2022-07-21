@@ -64,10 +64,6 @@ public interface LeaveApplyInfoService extends IService<LeaveApplyInfo> {
      * */
     CommonResult<Object> leaveApplyListByInstruct(LeaveApplyInfoVo vo, UserDto userDto);
 
-    /**
-     * 辅导员端请假申请列表中未审核数量(辅导员)
-     * */
-    CommonResult<Object> unCheckleaveApplyCount(LeaveApplyInfoVo vo, UserDto userDto);
 
 
 

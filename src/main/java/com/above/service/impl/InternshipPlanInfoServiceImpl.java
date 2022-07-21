@@ -1,8 +1,6 @@
 package com.above.service.impl;
 
-import com.above.dto.AllotInternshipPlanInfoDto;
-import com.above.dto.InternshipPlanInfoDto;
-import com.above.dto.UserDto;
+import com.above.dto.*;
 import com.above.po.*;
 import com.above.dao.InternshipPlanInfoMapper;
 import com.above.service.*;
@@ -109,9 +107,11 @@ public class InternshipPlanInfoServiceImpl extends ServiceImpl<InternshipPlanInf
     public CommonResult<Object> getInternshipPlanInfoById(InternshipPlanInfoVo vo, UserDto userDto) {
 
         InternshipPlanInfoDto internshipPlanInfoDto = this.getBaseMapper().getInternshipInfoById(vo);
+        List<InternshipScoreDto> internshipScoreDto = this.baseMapper.getInternshipScoreById(vo);
         if(internshipPlanInfoDto == null){
             return CommonResult.error(500,"找不到实习计划");
         }
+        internshipPlanInfoDto.setInternshipScore(internshipScoreDto);
         Map<String,Object> map = new HashMap<>();
         map.put("internshipPlanInfo",internshipPlanInfoDto);
         return CommonResult.success(map);
@@ -559,4 +559,52 @@ public class InternshipPlanInfoServiceImpl extends ServiceImpl<InternshipPlanInf
         map.put(BaseVo.LIST,allotInternshipPlanInfoDto);
         return CommonResult.success(map);
     }
+
+    /**
+     *@author: GG
+     *@data: 2022/7/19 17:27
+     *@function:根据教师id拿到实习计划列表
+     */
+    @Override
+    public CommonResult<Object> getPlanInfoByTeacher(BaseVo vo, UserDto userDto) {
+        Integer teacherId = userDto.getTeacherInfo().getId();
+        vo.setTeacherId(teacherId);
+        List<SimplePlanInfoDto> list = this.baseMapper.getPlanInfoByTeacher(vo);
+        Map<String,Object> map = new HashMap<>();
+        map.put(BaseVo.LIST,list);
+        return CommonResult.success(map);
+    }
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 14:06
+    *@function:根据学生id拿到实习计划列表
+    */
+    @Override
+    public CommonResult<Object> getPlanInfoByStudentId(BaseVo vo, UserDto userDto) {
+        Integer studentId = userDto.getStudentInfo().getId();
+        vo.setStudentId(studentId);
+        List<SimplePlanInfoDto> list = this.baseMapper.getPlanInfoByStudentId(vo);
+        Map<String,Object> map = new HashMap<>();
+        map.put(BaseVo.LIST,list);
+        return CommonResult.success(map);
+    }
+
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 14:26
+    *@function:根据学生id拿到个人资料
+    */
+    @Override
+    public CommonResult<Object> getStudentInfoByStudent(BaseVo vo, UserDto userDto) {
+        Integer userId = vo.getUserId();
+        vo.setUserId(userId);
+        SimpleStudentInfoDto simpleStudentInfoDto = this.baseMapper.getStudentInfoByStudent(vo);
+        Map<String,Object> map = new HashMap<>();
+        map.put("StudentInfo",simpleStudentInfoDto);
+        return CommonResult.success(map);
+    }
+
+
 }

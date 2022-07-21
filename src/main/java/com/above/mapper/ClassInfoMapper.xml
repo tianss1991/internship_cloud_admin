@@ -196,9 +196,8 @@
             ctr.update_datetime
         from class_teacher_relation as ctr
         <where>
-
             ctr.relation_type = 2
-
+            and ctr.deleted = 0
             <if test="classId != null">
                 AND ctr.class_id = #{classId}
             </if>
@@ -217,9 +216,8 @@
         ctr.update_datetime
         from class_teacher_relation as ctr
         <where>
-
             ctr.relation_type = 1
-
+            and ctr.deleted = 0
             <if test="classId != null">
                 AND ctr.class_id = #{classId}
             </if>

@@ -63,5 +63,29 @@ public class GradeTemplateController {
 
     }
 
+    /**
+     * @Description: 获取实习计划列表
+     * @Author: LZH
+     * @Date: 2022/7/14 9:10
+     */
+    @ApiOperation("获取实习计划列表")
+    @RequiresRoles(value = {"student","admin","schoolAdmin","departmentAdmin","instructor","teacher"}, logical = Logical.OR)
+    @GetMapping("getPlanWithTemplate")
+    public CommonResult<Object> getPlanWithTemplate(HttpServletRequest request, Optional<BaseVo> vo){
+        //从session获取user
+        UserDto userDto =(UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
+        //判断参数
+        if (!vo.isPresent()){
+            return CommonResult.error(500,"缺少参数");
+        }
+
+        if (vo.map(BaseVo::getPlanId).orElse(1).equals(1)){
+            return CommonResult.error(500,"缺少实习id");
+        }
+
+        return gradeTemplateService.getPlanWithTemplate(vo.get(),userDto);
+
+    }
+
 }
 

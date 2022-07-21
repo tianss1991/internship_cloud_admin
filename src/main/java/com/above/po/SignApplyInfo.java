@@ -35,7 +35,7 @@ public class SignApplyInfo implements Serializable {
     public static final Integer SUCCESS = 3;
 
     @ApiModelProperty(value = "编号")
-    @TableField("id")
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
     @ApiModelProperty(value = "学生id")

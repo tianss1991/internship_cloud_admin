@@ -1,6 +1,7 @@
 package com.above.dao;
 
 import com.above.dto.GradeTemplateDto;
+import com.above.dto.PlanWithOther;
 import com.above.po.GradeTemplate;
 import com.above.vo.BaseVo;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -31,5 +32,19 @@ public interface GradeTemplateMapper extends BaseMapper<GradeTemplate> {
      * @return 返回父级
      */
     GradeTemplateDto getGradeChildrenById(@Param("id") Integer id);
+
+    /**
+     *  获取实习计划成绩比例列表
+     * @param vo 前端参数
+     * @return 返回列表
+     */
+    List<PlanWithOther> getPlanWithGradeList(BaseVo vo);
+    /**
+     *  获取实习计划成绩比例列表总数
+     * @param vo 前端参数
+     * @return 返回列表
+     */
+    Integer getPlanWithGradeTotalCount(BaseVo vo);
+
 
 }

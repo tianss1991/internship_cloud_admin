@@ -17,6 +17,7 @@ import com.above.utils.MyStringUtils;
 import com.above.utils.PasswordCryptoTool;
 import com.above.utils.RedisUtils;
 import com.above.vo.BaseVo;
+import com.above.vo.InternshipPlanInfoVo;
 import com.above.vo.user.UpdateUserVo;
 import com.above.vo.user.UserVo;
 import com.alibaba.fastjson.JSON;
@@ -203,6 +204,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return CommonResult.error(500,"该用户未分配权限，请联系管理员");
         }
         return CommonResult.success("登录成功", returnMap);
+    }
+
+    /**
+     *@author: GG
+     *@data: 2022/7/20 11:36
+     *@function:拿到教师实习计划并放到token中
+     */
+    @Override
+    public CommonResult<Object> getInternshipPlanInfoByTeacher(HttpServletRequest request, InternshipPlanInfoVo vo) {
+        UserDto userDto = (UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
+        Integer planId = vo.getPlanId();
+        InternshipPlanInfo internshipPlanInfo = internshipPlanInfoMapper.selectById(planId);
+        SimplePlanInfoDto simplePlanInfoDto = new SimplePlanInfoDto();
+        simplePlanInfoDto.setStartTime(internshipPlanInfo.getStartTime());
+        simplePlanInfoDto.setEndTime(internshipPlanInfo.getEndTime());
+        simplePlanInfoDto.setPlanTitle(internshipPlanInfo.getPlanTitle());
+        simplePlanInfoDto.setId(internshipPlanInfo.getId());
+        simplePlanInfoDto.setMajorId(internshipPlanInfo.getMajorId());
+        simplePlanInfoDto.setGradeId(internshipPlanInfo.getGradeId());
+
+        userDto.setInternshipPlanInfo(simplePlanInfoDto);
+        SecurityUtils.getSubject().getSession().setAttribute(MyStringUtils.getRequestToken(request),userDto);
+        return CommonResult.success("查询成功" + MyStringUtils.getRequestToken(request), userDto);
     }
 
     /**

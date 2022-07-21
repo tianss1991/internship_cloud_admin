@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
+
 @Data
 public class InternshipPlanInfoDto {
 
@@ -91,8 +93,14 @@ public class InternshipPlanInfoDto {
     @ApiModelProperty(value = "打卡次数")
     private Integer signTimes;
 
+    @ApiModelProperty(value = "教师id")
+    private Integer teacherId;
 
+    @ApiModelProperty(value = "教师名称")
+    private String teacherName;
 
+    @ApiModelProperty(value = "实习计划评分占比")
+    private List<InternshipScoreDto> InternshipScore;
 
 
 

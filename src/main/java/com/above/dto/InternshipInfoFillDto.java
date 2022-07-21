@@ -11,7 +11,11 @@ public class InternshipInfoFillDto {
     *@data: 2022/7/19 14:40
     *@function:学生填报未填报用到的dto
     */
-    private Integer id;
+    @ApiModelProperty(value = "学生id")
+    private Integer studentId;
+
+    @ApiModelProperty(value = "用户id")
+    private Integer userId;
 
     @ApiModelProperty(value = "头像")
     private String userAvatar;

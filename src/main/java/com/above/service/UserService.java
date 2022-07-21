@@ -3,6 +3,7 @@ package com.above.service;
 import com.above.dto.UserDto;
 import com.above.po.User;
 import com.above.utils.CommonResult;
+import com.above.vo.InternshipPlanInfoVo;
 import com.above.vo.user.UpdateUserVo;
 import com.above.vo.user.UserVo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -81,4 +82,11 @@ public interface UserService extends IService<User> {
      * @Date: 2022/3/3 14:02
      */
     CommonResult<Object> getChooseRoleList(UserDto userDto,UserVo vo);
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 11:36
+    *@function:拿到教师实习计划并放到token中
+    */
+    CommonResult<Object> getInternshipPlanInfoByTeacher(HttpServletRequest request, InternshipPlanInfoVo vo);
 }

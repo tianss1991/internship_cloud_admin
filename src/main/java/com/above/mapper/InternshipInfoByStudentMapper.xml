@@ -297,7 +297,8 @@ FROM
     <select id="getInternshipApplyInfoFilled" resultType="com.above.dto.InternshipInfoFillDto">
 SELECT
 	u.user_avatar as userAvatar,
-	iibs.relation_student_id as id,
+	u.id as userId,
+	iibs.relation_student_id as studentId,
 	u.user_name as studentName,
 	uc.account_number as studentNumber,
 	iibs.company_name as companyName,
@@ -319,7 +320,7 @@ FROM
 WHERE
 	iws.deleted = 0
 		<if test="planId != null">
-			AND iibs.relation_plan_id = #{planId}
+			AND iws.relation_plan_id = #{planId}
 		</if>
 		<if test="teacherId != null">
 			AND iws.relation_teacher_id = #{teacherId}
@@ -347,7 +348,7 @@ WHERE
 		WHERE
 		iws.deleted = 0
 		<if test="planId != null">
-			AND iibs.relation_plan_id = #{planId}
+			AND iws.relation_plan_id = #{planId}
 		</if>
 		<if test="teacherId != null">
 			AND iws.relation_teacher_id = #{teacherId}
@@ -356,8 +357,9 @@ WHERE
 	</select>
 	<select id="getInternshipApplyInfoUnFill" resultType="com.above.dto.InternshipInfoFillDto">
 SELECT
+	u.id as userId,
 	u.user_avatar as userAvatar,
-	iws.relation_student_id as id,
+	iws.relation_student_id as studentId,
 	u.user_name as studentName,
 	uc.account_number as studentNumber
 FROM

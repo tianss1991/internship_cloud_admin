@@ -2,7 +2,9 @@ package com.above.service;
 
 import com.above.dto.UserDto;
 import com.above.po.InternshipPlanInfo;
+import com.above.po.User;
 import com.above.utils.CommonResult;
+import com.above.vo.BaseVo;
 import com.above.vo.InternshipPlanInfoVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -93,4 +95,34 @@ public interface InternshipPlanInfoService extends IService<InternshipPlanInfo> 
     *@function:获取实习分配列表中已分配教师学生列表
     */
     CommonResult<Object> getAllotInternshipPlanTeacherAndStudentInfoList(InternshipPlanInfoVo vo, UserDto userDto);
+
+    /**
+    *@author: GG
+    *@data: 2022/7/19 17:27
+    *@function:根据学生id拿到实习计划列表
+    */
+    CommonResult<Object> getPlanInfoByStudentId(BaseVo vo, UserDto userDto);
+
+    /**
+     *@author: GG
+     *@data: 2022/7/19 17:27
+     *@function:根据教师id拿到实习计划列表
+     */
+    CommonResult<Object> getPlanInfoByTeacher(BaseVo vo, UserDto userDto);
+
+    /**
+    *@author: GG
+    *@data: 2022/7/20 15:07
+    *@function:根据学生id拿到个人资料
+    */
+    CommonResult<Object> getStudentInfoByStudent(BaseVo vo, UserDto userDto);
+    
+    /**
+    *@author: GG
+    *@data: 2022/7/21 9:03
+    *@function:通过实习计划id拿到详细实习计划信息（通用）
+    */
+//    CommonResult<Object> getPlanInfoByPlanId(UserDto userDto);
+
+
 }

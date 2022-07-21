@@ -164,8 +164,8 @@ public class ReportWithStudentController {
      */
     @ApiOperation("统计日报-未写/已写(教师端)")
     @RequiresRoles(value = {"adviser"}, logical = Logical.OR)
-    @PostMapping("getDailyPaperStatisticsList")
-    public CommonResult<Object> getDailyPaperStatisticsList(HttpServletRequest request,@RequestBody ReportWithStudentVo vo) {
+    @GetMapping("getDailyPaperStatisticsList")
+    public CommonResult<Object> getDailyPaperStatisticsList(HttpServletRequest request,ReportWithStudentVo vo) {
         //从session获取user
         UserDto userDto = (UserDto) SecurityUtils.getSubject().getSession().getAttribute(MyStringUtils.getRequestToken(request));
 

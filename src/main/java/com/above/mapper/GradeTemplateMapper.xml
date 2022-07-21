@@ -52,6 +52,95 @@
         where
               pid = #{id}
     </select>
+    <select id="getPlanWithGradeList" resultType="com.above.dto.PlanWithOther">
+        SELECT
+        ipi.id AS id,
+        ipi.plan_title AS planTitle,
+        si.school_name AS schoolName,
+        di.department_name AS departmentName,
+        gi.grade_year AS gradeYear,
+        mi.major_name AS majorName,
+        ipi.major_id as majorId,
+        ipi.school_id as schoolId,
+        ipi.department_id as departmentId,
+        ipi.grade_id as gradeId,
+        GROUP_CONCAT(gt.content,"(",gt.score,")") as gradePerformance
+
+        FROM
+        (select plan_id,content ,score From grade_template  WHERE pid is null and plan_id is not null) gt
+        LEFT JOIN internship_plan_info ipi on gt.plan_id = ipi.id and ipi.deleted = 0
+        LEFT JOIN major_info mi ON ipi.major_id = mi.id
+        AND mi.deleted = 0
+        LEFT JOIN grade_info gi ON gi.id = ipi.grade_id
+        AND gi.deleted = 0
+        LEFT JOIN school_info si ON si.id = ipi.school_id 	AND si.deleted = 0
+        LEFT JOIN department_info di ON di.id = ipi.department_id  	AND di.deleted = 0
+        WHERE
+        ipi.deleted = 0
+        <if test="schoolId != null and schoolId > 0">
+            ipi.school_id = #{schoolId}
+        </if>
+        <if test="schoolIdList != null and schoolIdList.size()>0">
+            AND ipi.school_id IN
+            <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="departmentId != null and departmentId > 0">
+            ipi.department_id = #{departmentId}
+        </if>
+        <if test="departmentIdList != null and departmentIdList.size()>0">
+            AND ipi.department_id IN
+            <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="majorId != null and majorId > 0">
+            ipi.major_id = #{majorId}
+        </if>
+        <if test="gradeId != null and gradeId > 0">
+            ipi.grade_id = #{gradeId}
+        </if>
+        <if test="key != null and key != ''">
+            ipi.student_name like concat('%',#{key},'%')
+        </if>
+        limit #{start},#{size}
+    </select>
+    <select id="getPlanWithGradeTotalCount" resultType="java.lang.Integer">
+        SELECT
+            count(ipi.id)
+        FROM
+        internship_plan_info ipi
+        WHERE
+        ipi.deleted = 0
+        <if test="schoolId != null and schoolId > 0">
+            ipi.school_id = #{schoolId}
+        </if>
+        <if test="schoolIdList != null and schoolIdList.size()>0">
+            AND ipi.school_id IN
+            <foreach collection="schoolIdList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="departmentId != null and departmentId > 0">
+            ipi.department_id = #{departmentId}
+        </if>
+        <if test="departmentIdList != null and departmentIdList.size()>0">
+            AND ipi.department_id IN
+            <foreach collection="departmentIdList" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+        <if test="majorId != null and majorId > 0">
+            ipi.major_id = #{majorId}
+        </if>
+        <if test="gradeId != null and gradeId > 0">
+            ipi.grade_id = #{gradeId}
+        </if>
+        <if test="key != null and key != ''">
+            ipi.student_name like concat('%',#{key},'%')
+        </if>
+    </select>
 
 
 </mapper>

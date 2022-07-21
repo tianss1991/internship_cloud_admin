@@ -20,6 +20,15 @@ public class ReportWithStudentVo extends ReportWithStudent {
     @ApiModelProperty(value = "专业id")
     private Integer majorId;
 
+    @ApiModelProperty(value = "学号")
+    private String studentNumber;
+
+    @ApiModelProperty(value = "专业名称")
+    private String majorName;
+
+    @ApiModelProperty(value = "年级名称（比如2022级，四位年份数字+级）")
+    private String gradeYear;
+
     @ApiModelProperty(value = "页数")
     private Integer page = 1;
 

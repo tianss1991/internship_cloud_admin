@@ -168,9 +168,9 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
                 //查询学生该月是否已提交月报
                 QueryWrapper<ReportWithStudent> wrapper = new QueryWrapper<>();
                 wrapper.eq("deleted",BaseVo.UNDELETE).eq("student_id",studentId).eq("month",month);
-                ReportWithStudent reportWithStudent = reportWithStudentMapper.selectOne(wrapper);
-                String month1 = reportWithStudent.getMonth();
-                if (month.equals(month1)){
+                Integer months= reportWithStudentMapper.selectCount(wrapper);
+
+                if (months>0){
                     return CommonResult.error(500,"该月月报已提交");
                 }
                 //报告类型
@@ -391,6 +391,7 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
                     //删除状态
                     rws1.setDeleted(0);
 
+
                     //日报
                     if (reportType==1){
                         //编辑
@@ -398,6 +399,7 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
                             rws.setStatus(1);
                             boolean update = this.update(rws, qw);
                             if (update){
+
                                 return CommonResult.success("编辑成功", null);
                             }else {
                                 return CommonResult.success("编辑失败", null);
@@ -460,7 +462,9 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
                             rws1.setEndTime(endTime);
                             boolean save = this.save(rws1);
                             if (save) {
-                                return CommonResult.success("修改成功", null);
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("id",rws1.getId());
+                                return CommonResult.success("修改成功", map);
                             } else {
                                 return CommonResult.error(500, "修改失败");
                             }
@@ -492,7 +496,9 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
                             rws1.setMonth(month);
                             boolean save = this.save(rws1);
                             if (save) {
-                                return CommonResult.success("修改成功", null);
+                                Map<String, Object> map = new HashMap<>();
+                                map.put("id",rws1.getId());
+                                return CommonResult.success("修改成功", map);
                             } else {
                                 return CommonResult.error(500, "修改失败");
                             }
@@ -517,7 +523,9 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
                                  rws1.setReportType(4);
                                  boolean save = this.save(rws1);
                                  if (save) {
-                                     return CommonResult.success("修改成功", null);
+                                     Map<String, Object> map = new HashMap<>();
+                                     map.put("id",rws1.getId());
+                                     return CommonResult.success("修改成功", map);
                                  } else {
                                      return CommonResult.error(500, "修改失败");
                                  }
@@ -656,32 +664,45 @@ public class ReportWithStudentServiceImpl extends ServiceImpl<ReportWithStudentM
         public CommonResult<Object> getDailyPaperStatisticsList (UserDto userDto, ReportWithStudentVo vo){
             //获取参数
             Integer id = userDto.getId();
-            Integer majorId = vo.getMajorId();
-            String userName = vo.getUserName();
+            Integer teacherId = userDto.getTeacherInfo().getId();
 
             //日报完成状态 1-未写 2-已写
             Integer write = vo.getWrite();
             if (write==null ||write==0){
                 return CommonResult.error(500,"缺少日报完成状态");
             }
-            //获取教师id
-            QueryWrapper<TeacherInfo> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("user_id", id).eq("deleted", BaseVo.UNDELETE);
-            TeacherInfo teacherInfo = teacherInfoMapper.selectOne(queryWrapper);
-            Integer teacherId = teacherInfo.getId();
             if (teacherId == null || teacherId == 0) {
                 return CommonResult.error(500, "缺少教师id");
             }
             vo.setTeacherId(teacherId);
+            Integer reportType = vo.getReportType();
+            if (reportType==null || reportType==0){
+                return CommonResult.error(500,"缺少报告类型");
+            }
+            HashMap<String, Object> map = new HashMap<>(16);
             //未写
             if (write==1){
-                List<ReportWithStudentDto> dailyPaperStatisticsList = reportWithStudentMapper.getDailyPaperStatisticsList(vo);
-                return CommonResult.success(dailyPaperStatisticsList);
+                List<ReportWithStudentDto> list = reportWithStudentMapper.getDailyPaperStatisticsList(vo);
+                Integer totalCount = reportWithStudentMapper.getgetDailyPaperStatisticsListCount(vo);
+                //总页数
+                map.put(BaseVo.LIST, list);
+                //总数
+                map.put(BaseVo.TOTAL, totalCount);
+                //返回数据
+                map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),totalCount));
+                return CommonResult.success(map);
             }
             //已写
             if (write==2){
-                List<ReportWithStudentDto> statisticsList = reportWithStudentMapper.getStatisticsList(vo);
-                return CommonResult.success(statisticsList);
+                List<ReportWithStudentDto> list = reportWithStudentMapper.getStatisticsList(vo);
+                Integer totalCount = reportWithStudentMapper.getStatisticsListCount(vo);
+                //总页数
+                map.put(BaseVo.LIST, list);
+                //总数
+                map.put(BaseVo.TOTAL, totalCount);
+                //返回数据
+                map.put(BaseVo.PAGE,BaseVo.calculationPages(vo.getSize(),totalCount));
+                return CommonResult.success(map);
             }
            return CommonResult.error(500,"未知错误");
         }
